@@ -763,6 +763,8 @@ local function equipTool(tool)
     if char then
         local humanoid = char:FindFirstChildOfClass("Humanoid")
         if humanoid and allowedItems[tool.Name] then
+            -- Small delay ensures the tool is fully loaded before the game tries to equip it
+            task.wait(0.05)
             humanoid:EquipTool(tool)
         end
     end
@@ -824,4 +826,3 @@ ToggleBtn.MouseButton1Click:Connect(function()
         end
     end
 end)
-
