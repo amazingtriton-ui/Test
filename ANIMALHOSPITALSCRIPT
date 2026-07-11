@@ -826,3 +826,72 @@ ToggleBtn.MouseButton1Click:Connect(function()
         end
     end
 end)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SkipHeartbeatGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+local SkipBtn = Instance.new("TextButton")
+SkipBtn.Size = UDim2.new(0, 220, 0, 50)
+SkipBtn.Position = UDim2.new(0.5, -110, 0.3, 0)
+SkipBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+SkipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SkipBtn.Font = Enum.Font.GothamBold
+SkipBtn.TextSize = 14
+SkipBtn.Text = "skip heartbeat mini game"
+SkipBtn.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = SkipBtn
+
+local dragging, dragStart, startPos
+SkipBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = SkipBtn.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        SkipBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+        dragging = false 
+    end
+end)
+
+SkipBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local Event = ReplicatedStorage.Util.Net["RE/HeartbeatMinigameComplete"]
+        local targetRoom = workspace.Rooms.Emergency.Room7
+        
+        Event:FireServer(targetRoom, true)
+        
+        -- Visual feedback
+        SkipBtn.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
+        SkipBtn.Text = "SKIPPED!"
+        
+        task.delay(1, function()
+            if SkipBtn then
+                SkipBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                SkipBtn.Text = "skip heartbeat mini game"
+            end
+        end)
+    end)
+end)
