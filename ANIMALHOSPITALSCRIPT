@@ -1,0 +1,687 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = Players.LocalPlayer:WaitForChild("PlayerGui")
+end
+
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RemoteDestroyerGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+
+local DestroyBtn = Instance.new("TextButton")
+DestroyBtn.Name = "DestroyBtn"
+DestroyBtn.Size = UDim2.new(0, 180, 0, 45)
+DestroyBtn.Position = UDim2.new(0.5, -90, 0.1, 0)
+DestroyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DestroyBtn.Font = Enum.Font.GothamBold
+DestroyBtn.TextSize = 13
+DestroyBtn.Text = "Destroy Sanity Remote"
+DestroyBtn.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = DestroyBtn
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(80, 80, 80)
+UIStroke.Thickness = 1.5
+UIStroke.Parent = DestroyBtn
+
+
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    DestroyBtn.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X, 
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+
+DestroyBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = DestroyBtn.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+DestroyBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+
+DestroyBtn.MouseButton1Click:Connect(function()
+    local found = false
+    
+    pcall(function()
+        local util = ReplicatedStorage:FindFirstChild("Util")
+        if util then
+            local net = util:FindFirstChild("Net")
+            if net then
+                local remote = net:FindFirstChild("RE/PlayerLostSanity")
+                if remote then
+                    remote:Destroy()
+                    found = true
+                end
+            end
+        end
+    end)
+    
+
+    if found then
+        DestroyBtn.Text = "Remote Destroyed!"
+        DestroyBtn.BackgroundColor3 = Color3.fromRGB(40, 150, 40) 
+    else
+        DestroyBtn.Text = "Not Found /  Already Deleted"
+        DestroyBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+    end
+    
+    
+    task.delay(1.5, function()
+        if DestroyBtn and DestroyBtn.Parent then
+            DestroyBtn.Text = "remove stress job"
+            DestroyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        end
+    end)
+end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local NPCsFolder = workspace:WaitForChild("NPCs")
+
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local espFolder = Instance.new("Folder")
+espFolder.Name = "NPC_ESP_Folder"
+espFolder.Parent = guiParent
+
+local espCache = {}
+
+local function getRoot(character)
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Head") or character.PrimaryPart
+end
+
+local function createESP(npc)
+    local root = getRoot(npc)
+    if not root then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = npc.Name .. "_TextESP"
+    billboard.Adornee = root
+    billboard.Size = UDim2.new(0, 400, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3.5, 0)
+    billboard.AlwaysOnTop = true
+    billboard.LightInfluence = 0 
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.TextScaled = false
+    textLabel.TextSize = 14
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.TextStrokeTransparency = 0
+    textLabel.Parent = billboard
+    billboard.Parent = espFolder
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = npc.Name .. "_BodyESP"
+    highlight.Adornee = npc 
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.Parent = espFolder
+
+    espCache[npc] = {Gui = billboard, Label = textLabel, Highlight = highlight}
+end
+
+RunService.RenderStepped:Connect(function()
+    local myRoot = LocalPlayer.Character and getRoot(LocalPlayer.Character)
+    
+    for npc, espData in pairs(espCache) do
+        if not npc or not npc.Parent then
+            espData.Gui:Destroy()
+            espData.Highlight:Destroy()
+            espCache[npc] = nil
+        end
+    end
+
+    for _, npc in ipairs(NPCsFolder:GetChildren()) do
+        if not espCache[npc] then
+            createESP(npc)
+        end
+
+        local espData = espCache[npc]
+        if espData then
+            local root = getRoot(npc)
+            if root and myRoot then
+                local dist = math.floor((myRoot.Position - root.Position).Magnitude)
+                
+                local skinwalkerAttr = npc:GetAttribute("Skinwalker")
+                local isAnomaly = (skinwalkerAttr == true) 
+                
+                local statusText = isAnomaly and "anomaly" or "innocent"
+                local color = isAnomaly and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(50, 255, 50)
+                
+                local roomAttr = npc:GetAttribute("designatedRoom")
+                local roomText = "Unknown"
+                
+                if roomAttr then
+                    -- string.match("%d+") extracts only the numbers from the text (e.g. "Room15" -> "15")
+                    local extractedNumber = string.match(tostring(roomAttr), "%d+")
+                    roomText = extractedNumber and extractedNumber or tostring(roomAttr)
+                end
+
+                espData.Label.Text = string.format("%s | %d studs | %s | Room: %s", npc.Name, dist, statusText, roomText)
+                espData.Label.TextColor3 = color
+
+                espData.Highlight.FillColor = color
+                espData.Highlight.OutlineColor = color
+            end
+        end
+    end
+end)
+
+local function bypassPrompt(instance)
+    if instance:IsA("ProximityPrompt") then
+        instance.HoldDuration = 0
+    end
+end
+
+for _, instance in ipairs(workspace:GetDescendants()) do
+    bypassPrompt(instance)
+end
+
+workspace.DescendantAdded:Connect(function(instance)
+    bypassPrompt(instance)
+end)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoCoffeeGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 220, 0, 50)
+ToggleBtn.Position = UDim2.new(0.5, -110, 0.1, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Text = "auto get coffee = false"
+ToggleBtn.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = ToggleBtn
+
+local dragging, dragStart, startPos
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = ToggleBtn.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+        dragging = false 
+    end
+end)
+
+local autoCoffee = false
+
+local function tp(x, y, z)
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char:PivotTo(CFrame.new(x, y, z))
+    end
+end
+
+local function firePrompt(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        prompt.HoldDuration = 0
+        task.wait(0.1)
+        pcall(function()
+            fireproximityprompt(prompt)
+        end)
+    end
+end
+
+local function coffeeRoutine()
+    while autoCoffee do
+        pcall(function()
+            local machine = workspace.Misc:FindFirstChild("CoffeeMachine")
+            
+            -- FIX: Check if Brewing is false (done) AND the coffee prompt is enabled
+            if machine and machine:GetAttribute("Brewing") == false then
+                local coffee = machine:FindFirstChild("Coffee")
+                if coffee and coffee:FindFirstChild("PP") and coffee.PP.Enabled then
+                    local char = LocalPlayer.Character
+                    if char and char.PrimaryPart then
+                        -- 1. Save your original position
+                        local originalCFrame = char:GetPivot()
+                        
+                        -- 2. Teleport to the coffee machine
+                        tp(-119, 3.5, 11) 
+                        task.wait(0.3)
+                        
+                        -- 3. Grab the coffee
+                        firePrompt(coffee.PP)
+                        task.wait(0.3)
+                        
+                        -- 4. Teleport back to original position
+                        char:PivotTo(originalCFrame)
+                        
+                        task.wait(1) 
+                    end
+                end
+            end
+        end)
+        task.wait(0.5) 
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    autoCoffee = not autoCoffee
+    if autoCoffee then
+        ToggleBtn.Text = "auto get coffee = true"
+        ToggleBtn.TextColor3 = Color3.fromRGB(80, 255, 80)
+        task.spawn(coffeeRoutine)
+    else
+        ToggleBtn.Text = "auto get coffee = false"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    end
+end)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI Setup
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ItemFetcherGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 200, 0, 340)
+
+local TopFrame = Instance.new("Frame")
+TopFrame.Name = "TopFrame"
+TopFrame.Parent = MainFrame
+TopFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+TopFrame.BorderSizePixel = 0
+TopFrame.Size = UDim2.new(1, 0, 0, 28)
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Parent = TopFrame
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "ITEM FETCHER"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+
+local ScrollingFrame = Instance.new("ScrollingFrame")
+ScrollingFrame.Parent = MainFrame
+ScrollingFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ScrollingFrame.BorderSizePixel = 0
+ScrollingFrame.Position = UDim2.new(0, 0, 0, 28)
+ScrollingFrame.Size = UDim2.new(1, 0, 1, -28)
+ScrollingFrame.ScrollBarThickness = 4
+ScrollingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ScrollingFrame
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 4)
+
+local UIPadding = Instance.new("UIPadding")
+UIPadding.Parent = ScrollingFrame
+UIPadding.PaddingTop = UDim.new(0, 4)
+UIPadding.PaddingBottom = UDim.new(0, 4)
+UIPadding.PaddingLeft = UDim.new(0, 4)
+UIPadding.PaddingRight = UDim.new(0, 4)
+
+-- Make GUI Draggable
+local dragging, dragInput, dragStart, startPos
+TopFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+TopFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- Item Configuration Data
+local itemsData = {
+    {name = "Eye Drops",  coord = Vector3.new(-152, 3.5, -58)},
+    {name = "IV Drops",   coord = Vector3.new(-152, 3.5, -58)},
+    {name = "Medkit",     coord = Vector3.new(-153, 3.5, -70)},
+    {name = "Thermo",     coord = Vector3.new(-153, 3.5, -70)},
+    {name = "Ointment",   coord = Vector3.new(-151, 3.5, -82)},
+    {name = "Bandages",    coord = Vector3.new(-151, 3.5, -82)},
+    {name = "Maple Syrup",coord = Vector3.new(-138, 3.5, -81)},
+    {name = "Cough Syrup",coord = Vector3.new(-138, 3.5, -81)},
+    {name = "Medicine",   coord = Vector3.new(-138, 3.5, -62)},
+    {name = "Herbs",       coord = Vector3.new(-138, 3.5, -62)}
+}
+
+-- Teleport and Fetch Logic
+local isFetching = false
+
+local function fetchItem(itemName, targetCoord, btn)
+    if isFetching then return end
+    isFetching = true
+    
+    local char = LocalPlayer.Character
+    if not char or not char.PrimaryPart then 
+        isFetching = false 
+        return 
+    end
+
+    btn.Text = "FETCHING..."
+    btn.BackgroundColor3 = Color3.fromRGB(150, 150, 40)
+    
+    -- 1. Save original pos
+    local originalCFrame = char:GetPivot()
+    
+    -- 2. Teleport to target
+    char:PivotTo(CFrame.new(targetCoord))
+    task.wait(0.1) -- Give the server time to register your new physical location
+    
+    -- 3. Find Item(s) and Fire Prompt
+    local found = false
+    
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj.Name == itemName then
+            local pp = obj:FindFirstChild("PP", true)
+            
+            if pp and pp:IsA("ProximityPrompt") then
+                -- SECURITY BYPASS: Force the prompt to be interactable from anywhere and through walls
+                pp.RequiresLineOfSight = false
+                pp.MaxActivationDistance = 50 
+                pp.HoldDuration = 0
+                
+                task.wait(0.1)
+                pcall(function()
+                    fireproximityprompt(pp)
+                end)
+                found = true
+                -- We intentionally DO NOT break here. If there are multiple items with the same name, we fire them all.
+            end
+        end
+    end
+    
+    task.wait(0.3) -- Wait half a second before teleporting back to ensure the item enters the inventory
+    
+    -- 4. Teleport Back
+    char:PivotTo(originalCFrame)
+    
+    if found then
+        btn.Text = "SUCCESS"
+        btn.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
+    else
+        btn.Text = "NOT FOUND"
+        btn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+    end
+    
+    task.delay(0.3, function()
+        if btn then
+            btn.Text = "Get : " .. itemName
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        end
+        isFetching = false
+    end)
+end
+
+-- Create Buttons dynamically
+for _, data in ipairs(itemsData) do
+    local btn = Instance.new("TextButton")
+    btn.Name = data.name .. "Btn"
+    btn.Parent = ScrollingFrame
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    btn.Text = "Get : " .. data.name
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 12
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 4)
+    corner.Parent = btn
+    
+    btn.MouseButton1Click:Connect(function()
+        task.spawn(function()
+            fetchItem(data.name, data.coord, btn)
+        end)
+    end)
+end
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MemoryTrackerGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, 200, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 220, 0, 300)
+
+local TopFrame = Instance.new("Frame")
+TopFrame.Name = "TopFrame"
+TopFrame.Parent = MainFrame
+TopFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+TopFrame.BorderSizePixel = 0
+TopFrame.Size = UDim2.new(1, 0, 0, 28)
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Parent = TopFrame
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Size = UDim2.new(1, 0, 1, 0)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "MEMORY TRACKER"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 14
+
+local ClearBtn = Instance.new("TextButton")
+ClearBtn.Parent = MainFrame
+ClearBtn.Size = UDim2.new(0.9, 0, 0, 30)
+ClearBtn.Position = UDim2.new(0.05, 0, 0, 35)
+ClearBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+ClearBtn.Text = "CLEAR SEQUENCE"
+ClearBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ClearBtn.Font = Enum.Font.GothamBold
+ClearBtn.TextSize = 12
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 4)
+UICorner.Parent = ClearBtn
+
+local LogScroll = Instance.new("ScrollingFrame")
+LogScroll.Parent = MainFrame
+LogScroll.Size = UDim2.new(0.9, 0, 1, -80)
+LogScroll.Position = UDim2.new(0.05, 0, 0, 70)
+LogScroll.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+LogScroll.BorderSizePixel = 0
+LogScroll.ScrollBarThickness = 4
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = LogScroll
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 2)
+
+local dragging, dragInput, dragStart, startPos
+TopFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+TopFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+local sequenceLog = {}
+local sequenceCount = 0
+
+local function UpdateLogUI()
+    for _, child in ipairs(LogScroll:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+    
+    local ySize = 0
+    for i, data in ipairs(sequenceLog) do
+        local lbl = Instance.new("TextLabel")
+        lbl.Parent = LogScroll
+        lbl.Size = UDim2.new(1, 0, 0, 25)
+        lbl.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        lbl.BorderSizePixel = 0
+        lbl.Text = i .. ". " .. data.name
+        lbl.TextColor3 = data.color or Color3.fromRGB(200, 200, 200)
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 12
+        ySize = ySize + 27
+    end
+    
+    LogScroll.CanvasSize = UDim2.new(0, 0, 0, ySize)
+end
+
+ClearBtn.MouseButton1Click:Connect(function()
+    sequenceLog = {}
+    sequenceCount = 0
+    UpdateLogUI()
+end)
+
+local function fuzzyColorMatch(c1, c2)
+    -- Fallback in case exact equality fails due to float imprecision
+    return math.abs(c1.R - c2.R) < 0.01 and math.abs(c1.G - c2.G) < 0.01 and math.abs(c1.B - c2.B) < 0.01
+end
+
+task.spawn(function()
+    local path = workspace:WaitForChild("Rooms", 10)
+    if not path then return end
+    
+    local emergency = path:WaitForChild("Emergency", 10)
+    local room6 = emergency and emergency:WaitForChild("Room6", 10)
+    local minigame = room6 and room6:WaitForChild("Minigame", 10)
+    local colorsFolder = minigame and minigame:WaitForChild("Colors", 10)
+    
+    if colorsFolder then
+        for _, model in ipairs(colorsFolder:GetChildren()) do
+            local button = model:FindFirstChild("Button")
+            if button and button:IsA("BasePart") then
+                button:GetPropertyChangedSignal("Color"):Connect(function()
+                    local mainColor = button:GetAttribute("MainColor")
+                    if mainColor and typeof(mainColor) == "Color3" then
+                        if button.Color == mainColor or fuzzyColorMatch(button.Color, mainColor) then
+                            sequenceCount = sequenceCount + 1
+                            table.insert(sequenceLog, {
+                                name = model.Name,
+                                color = mainColor
+                            })
+                            UpdateLogUI()
+                        end
+                    end
+                end)
+            end
+        end
+    end
+end)
+
