@@ -685,3 +685,143 @@ task.spawn(function()
     end
 end)
 
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Setup the GUI
+local success, guiParent = pcall(function() return game:GetService("CoreGui") end)
+if not success or not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoEquipGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = guiParent
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 220, 0, 50)
+ToggleBtn.Position = UDim2.new(0.5, -110, 0.2, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Text = "Auto Equip Items: OFF"
+ToggleBtn.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 6)
+UICorner.Parent = ToggleBtn
+
+-- Make it draggable
+local dragging, dragStart, startPos
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = ToggleBtn.Position
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
+        dragging = false 
+    end
+end)
+
+-- The Auto Equip Logic
+local autoEquip = false
+local backpackConnection = nil
+local characterConnection = nil
+
+-- The exact list of items to look for (Added singular versions just in case)
+local allowedItems = {
+    ["Eye Drops"] = true,
+    ["IV Drops"] = true,
+    ["Medkit"] = true,
+    ["Thermo"] = true,
+    ["Ointment"] = true,
+    ["Bandages"] = true,
+    ["Bandage"] = true, 
+    ["Maple Syrup"] = true,
+    ["Cough Syrup"] = true,
+    ["Medicine"] = true,
+    ["Herbs"] = true,
+    ["Herb"] = true
+}
+
+local function equipTool(tool)
+    if not autoEquip then return end
+    
+    local char = LocalPlayer.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid and allowedItems[tool.Name] then
+            humanoid:EquipTool(tool)
+        end
+    end
+end
+
+local function checkExistingItems()
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and allowedItems[tool.Name] then
+                equipTool(tool)
+            end
+        end
+    end
+end
+
+local function setupBackpackListener(character)
+    if backpackConnection then backpackConnection:Disconnect() end
+    
+    local backpack = LocalPlayer:WaitForChild("Backpack", 5)
+    if backpack then
+        backpackConnection = backpack.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") then
+                equipTool(child)
+            end
+        end)
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    autoEquip = not autoEquip
+    if autoEquip then
+        ToggleBtn.Text = "Auto Equip Items: ON"
+        ToggleBtn.TextColor3 = Color3.fromRGB(80, 255, 80)
+        
+        -- Check if you already have the items in your inventory right now
+        checkExistingItems()
+        
+        -- Start listening for new items
+        if LocalPlayer.Character then
+            setupBackpackListener(LocalPlayer.Character)
+        end
+        
+        -- Make sure it keeps working if you die/respawn
+        if not characterConnection then
+            characterConnection = LocalPlayer.CharacterAdded:Connect(function(char)
+                if autoEquip then
+                    setupBackpackListener(char)
+                end
+            end)
+        end
+    else
+        ToggleBtn.Text = "Auto Equip Items: OFF"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+        
+        if backpackConnection then
+            backpackConnection:Disconnect()
+            backpackConnection = nil
+        end
+    end
+end)
+
