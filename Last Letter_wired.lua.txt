@@ -229,7 +229,10 @@ local uselessEnglishWords = {
     bkt = true,
     bklr = true,
     bkbndr = true,
-    helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
+    pk = true,
+    szell = true,
+    pkg = true,
+helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
     ilswallahiimcooked = true,
     aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae = true,
     kzyocanyoubuymefoodlowkey = true,
@@ -250,6 +253,9 @@ local uselessEnglishWords = {
     xiloveskrylorspaghettix = true,
     trallalero = true,
     ineskiwistopspamming = true,
+    pkgs = true,
+    trakijariteminylarginylglycylglutaminylleucylleucylserylglutamylglutamylglycylhistidylglycylalanylglycylglutaminylglutaminyllysylalanylarginylglutamylglutamylvalylisoleucylglutamylleucylmethionylasparaginylaspartylthreonylglutamyllysyllysylleucylserylglutamylpony = true,
+pkt = true
 }
 
 
@@ -263,6 +269,11 @@ local usefulEnglishWords = {
     so = true,
     fsr = true,
     ugyurs = true,
+    xoxo = true,
+    xoxos = true,
+    lgbt = true,
+    lgbtq = true,
+    lgbtqia = true
 }
 
 
