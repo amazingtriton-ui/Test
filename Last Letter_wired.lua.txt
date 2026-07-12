@@ -255,7 +255,11 @@ helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsin
     ineskiwistopspamming = true,
     pkgs = true,
     trakijariteminylarginylglycylglutaminylleucylleucylserylglutamylglutamylglycylhistidylglycylalanylglycylglutaminylglutaminyllysylalanylarginylglutamylglutamylvalylisoleucylglutamylleucylmethionylasparaginylaspartylthreonylglutamyllysyllysylleucylserylglutamylpony = true,
-pkt = true
+pkt = true,
+hd = true,
+hl = true,
+hlqn = true,
+hld = true
 }
 
 
