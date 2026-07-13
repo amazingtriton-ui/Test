@@ -346,8 +346,8 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    x = 10, z = 9, q = 9, j = 8, v = 6, k = 5, b = 4, f = 3, w = 3,
-    y = 2, g = 2, p = 2,
+    x = 4, z = 3, q = 3, j = 2, v = 4, k = 2, b = 4, f = 3, w = 3,
+    y = 3, g = 1, p = 1,
     bk = 10, pk = 10, hd = 10, hl = 10, fd = 10, kt = 10, sz = 9, ez = 9, ky = 8, py = 8, ii = 10, ly = 6
 }
 
