@@ -356,15 +356,19 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
+    x = 4, z = 2, q = 3, j = 5, v = 7, k = 7, b = 1, f = 1, w = 5,
+    y = 4, g = 2, p = 1,
     bk = 10, pk = 10, hd = 10, hl = 10, fd = 10, kt = 10, sz = 9, ez = 9, ky = 8, py = 8, dh = 10, ly = 6, yc = 10
 }
 
 local function GetKillerScore(word)
     local lastTwo = word:sub(-2)
+    local lastChar = word:sub(-1)
     
-    -- Check for 2-letter combos first, then fall back to single letter
-    return HardLetterScores[lastTwo]
+    -- Check for 2-letter combos first, then fall back to single letter, finally default to 0
+    return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
 end
+
 
 
 local function getDistance(s1, s2)
