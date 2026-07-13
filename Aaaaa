@@ -230,9 +230,11 @@ local uselessEnglishWords = {
     bklr = true,
     bkbndr = true,
     pk = true,
-    szell = true,
     pkg = true,
-helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
+    pkgs = true,
+    pkt = true,
+    szell = true,
+    helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
     ilswallahiimcooked = true,
     aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae = true,
     kzyocanyoubuymefoodlowkey = true,
@@ -253,27 +255,23 @@ helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsin
     xiloveskrylorspaghettix = true,
     trallalero = true,
     ineskiwistopspamming = true,
-    pkgs = true,
     trakijariteminylarginylglycylglutaminylleucylleucylserylglutamylglutamylglycylhistidylglycylalanylglycylglutaminylglutaminyllysylalanylarginylglutamylglutamylvalylisoleucylglutamylleucylmethionylasparaginylaspartylthreonylglutamyllysyllysylleucylserylglutamylpony = true,
-pkt = true,
-hd = true,
-hl = true,
-hlqn = true,
-hld = true,
-hler = true,
-jawohl = true,
-fsiest = true,
-fstore = true,
-nnethermore = true,
-fgrid = true,
-hlqn = true,
-mbeuer = true,
-["trak██████"] = true,
-["yla█████"] = true,
-["ayll████"] = true,
-allez = true
+    hd = true,
+    hl = true,
+    hlqn = true,
+    hld = true,
+    hler = true,
+    jawohl = true,
+    fsiest = true,
+    fstore = true,
+    nnethermore = true,
+    fgrid = true,
+    mbeuer = true,
+    ["trak██████"] = true,
+    ["yla█████"] = true,
+    ["ayll████"] = true,
+    allez = true,
 }
-
 
 local usefulEnglishWords = {
     larp = true,
@@ -365,7 +363,7 @@ local function GetKillerScore(word)
     local lastTwo = word:sub(-2)
     
     -- Check for 2-letter combos first, then fall back to single letter
-    return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
+    return HardLetterScores[lastTwo]
 end
 
 
