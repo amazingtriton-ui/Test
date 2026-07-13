@@ -260,7 +260,18 @@ hd = true,
 hl = true,
 hlqn = true,
 hld = true,
-hler = true
+hler = true,
+jawohl = true,
+fsiest = true,
+fstore = true,
+nnethermore = true,
+fgrid = true,
+hlqn = true,
+mbeuer = true,
+["trak██████"] = true,
+["yla█████"] = true,
+["ayll████"] = true,
+allez = true
 }
 
 
@@ -347,14 +358,11 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    x = 4, z = 3, q = 3, j = 2, v = 4, k = 2, b = 4, f = 3, w = 3,
-    y = 3, g = 1, p = 1,
     bk = 10, pk = 10, hd = 10, hl = 10, fd = 10, kt = 10, sz = 9, ez = 9, ky = 8, py = 8, dh = 10, ly = 6, yc = 10
 }
 
 local function GetKillerScore(word)
     local lastTwo = word:sub(-2)
-    local lastChar = word:sub(-1)
     
     -- Check for 2-letter combos first, then fall back to single letter
     return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
