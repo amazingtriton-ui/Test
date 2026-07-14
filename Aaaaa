@@ -271,6 +271,20 @@ local uselessEnglishWords = {
     ["yla█████"] = true,
     ["ayll████"] = true,
     allez = true,
+eyck = true,
+qr = true,
+qrs = true,
+ximenez = true,
+kyles = true,
+Radetzky = true,
+Eeks = true,
+Gd = true,
+Gds = true,
+aqueoable = true,
+sg = true,
+sgd = true,
+ggr = true,
+xidontknow = true
 }
 
 local usefulEnglishWords = {
@@ -287,7 +301,14 @@ local usefulEnglishWords = {
     xoxos = true,
     lgbt = true,
     lgbtq = true,
-    lgbtqia = true
+    lgbtqia = true,
+itws = true,
+ez = true,
+ahhh = true,
+jk = true,
+at = true,
+hi = true,
+scoial = true
 }
 
 
@@ -356,18 +377,22 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    x = 4, z = 2, q = 3, j = 5, v = 7, k = 7, b = 1, f = 1, w = 5,
-    y = 4, g = 2, p = 1,
-    bk = 10, pk = 10, hd = 10, hl = 10, fd = 10, kt = 10, sz = 9, ez = 9, ky = 8, py = 8, dh = 10, ly = 6, yc = 10
+    pt = 17, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
+    hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
+    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7
 }
 
 local function GetKillerScore(word)
+    if not word then return 0 end
+    
     local lastTwo = word:sub(-2)
     local lastChar = word:sub(-1)
     
-    -- Check for 2-letter combos first, then fall back to single letter, finally default to 0
-    return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
+    -- Prioritize 2-letter combos, fall back to 1-letter, MUST default to 0 to prevent nil comparison crashes
+    local score = HardLetterScores[lastTwo] or HardLetterScores[lastChar]
+    return score or 0
 end
+
 
 
 
