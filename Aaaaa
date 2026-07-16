@@ -312,7 +312,9 @@ scoial = true,
 ofc = true,
 bts = true,
 btn = true,
-lbl = true
+lbl = true,
+omg = true
+
 }
 
 
@@ -381,9 +383,9 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    pt = 17, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
+    hm = 20, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 20, hd = 16, 
     hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
-    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7
+    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7, dz = 20
 }
 
 local function GetKillerScore(word)
@@ -2338,7 +2340,7 @@ UpdateList = function(detectedText, requiredLetter)
         local fallbackExacts = {}
         local partials = {}
         local maxPartialLen = 0
-        local limit = 100
+        local limit = 10000
         
         if bucket then
             local checkWord = function(w)
