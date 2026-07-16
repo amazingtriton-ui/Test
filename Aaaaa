@@ -383,22 +383,26 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    hm = 20, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 20, hd = 16, 
+    pt = 17, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
     hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
-    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7, dz = 20
+    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
+    mb = 17, sd = 35, dz = 34,
+    pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
+    obia = 13, lith = 12, Ning = 15
 }
 
 local function GetKillerScore(word)
     if not word then return 0 end
     
+    local lastFour = word:sub(-4)
+    local lastThree = word:sub(-3)
     local lastTwo = word:sub(-2)
     local lastChar = word:sub(-1)
     
-    -- Prioritize 2-letter combos, fall back to 1-letter, MUST default to 0 to prevent nil comparison crashes
-    local score = HardLetterScores[lastTwo] or HardLetterScores[lastChar]
+    -- Check longest combos first (4-letter down to 1-letter), MUST default to 0
+    local score = HardLetterScores[lastFour] or HardLetterScores[lastThree] or HardLetterScores[lastTwo] or HardLetterScores[lastChar]
     return score or 0
 end
-
 
 
 
