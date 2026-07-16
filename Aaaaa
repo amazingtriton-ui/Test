@@ -389,29 +389,35 @@ local HardLetterScores = {
     mb = 17, sd = 35, dz = 34,
     pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
     obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18, ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
+    lain = 16, ous = 19, ert = 18, lle = 20, enso = 17, ely = 17, sia = 16, zing = 18, cide = 20, os = 9, dio = 12, nal = 19, lah = 18, ary = 18, rya = 20, yal = 17, lias = 15
+    ames = 14, cups = 20,
 }
 
+local removeLongHardLetters = false
+
 local function GetKillerScore(word)
-    if not word then return 0 end
-    
+    if not word then
+        return 0
+    end
+
     local lastFour = word:sub(-4)
     local lastThree = word:sub(-3)
     local lastTwo = word:sub(-2)
     local lastChar = word:sub(-1)
-    
-    local score = nil
-    
+
+    local score
+
     if removeLongHardLetters then
-        -- TRUE: Ignore 3 and 4 character combinations, ONLY check 2 and 1
+        -- Only check 2- and 1-letter endings
         score = HardLetterScores[lastTwo] or HardLetterScores[lastChar]
     else
-        -- FALSE (Default): Check everything from longest to shortest
-        score = HardLetterScores[lastFour] 
-             or HardLetterScores[lastThree] 
-             or HardLetterScores[lastTwo] 
-             or HardLetterScores[lastChar]
+        -- Check 4, 3, 2, then 1
+        score = HardLetterScores[lastFour]
+            or HardLetterScores[lastThree]
+            or HardLetterScores[lastTwo]
+            or HardLetterScores[lastChar]
     end
-               
+
     return score or 0
 end
 
@@ -3010,11 +3016,12 @@ end)
 -- Toggle Logic
 ComboToggleBtn.MouseButton1Click:Connect(function()
     removeLongHardLetters = not removeLongHardLetters
+
+    ComboToggleBtn.Text = "Remove Long Hard Letters = " .. tostring(removeLongHardLetters)
+
     if removeLongHardLetters then
-        ComboToggleBtn.Text = "enable something = true"
         ComboToggleBtn.TextColor3 = Color3.fromRGB(80, 255, 80)
     else
-        ComboToggleBtn.Text = "enable something = false"
         ComboToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
     end
 end)
