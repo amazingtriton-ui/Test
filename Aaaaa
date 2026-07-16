@@ -388,7 +388,7 @@ local HardLetterScores = {
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
     mb = 17, sd = 35, dz = 34,
     pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
-    obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18 ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
+    obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18, ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
 }
 
 local function GetKillerScore(word)
@@ -2958,6 +2958,10 @@ inputConn = UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == TOGGLE_KEY then ScreenGui.Enabled = not ScreenGui.Enabled end
 end)
 
+local currentCPM = Config.CPM
+local isBlatant = Config.Blatant
+local useHumanization = Config.Humanize
+-- ADD IT HERE:
 local removeLongHardLetters = false
 
 -- Hard Combos GUI Setup
