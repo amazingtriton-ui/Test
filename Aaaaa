@@ -389,7 +389,7 @@ local HardLetterScores = {
     mb = 17, sd = 35, dz = 34,
     pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
     obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18, ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
-    lain = 16, ous = 19, ert = 18, lle = 20, enso = 17, ely = 17, sia = 16, zing = 18, cide = 20, os = 9, dio = 12, nal = 19, lah = 18, ary = 18, rya = 20, yal = 17, lias = 15
+    lain = 16, ous = 19, ert = 18, lle = 20, enso = 17, ely = 17, sia = 16, zing = 18, cide = 20, os = 9, dio = 12, nal = 19, lah = 18, ary = 18, rya = 20, yal = 17, lias = 15,
     ames = 14, cups = 20,
 }
 
