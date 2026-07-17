@@ -2417,16 +2417,18 @@ UpdateList = function(detectedText, requiredLetter)
                 -- If we are searching the entire dictionary with no prefix, cap it to prevent lag
                 if bucket == Words and searchLimit == math.huge then searchLimit = 5000 end
                 
-                                for _, w in ipairs(bucket) do
-                    checkWord(w)
-                    if #exacts >= searchLimit then break end
+                        for _, w in ipairs(bucket) do
+                        checkWord(w)
+                        if #exacts >= searchLimit then break end
+                    end
                 end
             end
             
             return exacts, partials, maxPartialLen
         end
 
-    local exacts, partials, pLen = CollectMatches(searchPrefix, false)
+        local exacts, partials, pLen = CollectMatches(searchPrefix, false)
+
 
 
     if #exacts == 0 and lengthMode > 0 then
