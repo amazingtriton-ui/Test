@@ -390,7 +390,8 @@ local HardLetterScores = {
     pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
     obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18, ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
     lain = 16, ous = 19, ert = 18, lle = 20, enso = 17, ely = 17, sia = 16, zing = 18, cide = 20, os = 9, dio = 12, nal = 19, lah = 18, ary = 18, rya = 20, yal = 17, lias = 15,
-    ames = 14, cups = 20,
+    ames = 14, cups = 20, od = 7, ais = 13, ento = 14, ney = 18, aged = 19, vy = 19, eren = 20, pta = 20, kous = 21, oes = 21,
+
 }
 
 local removeLongHardLetters = false
@@ -2393,39 +2394,34 @@ UpdateList = function(detectedText, requiredLetter)
                 end
             end
 
-            local useBinary = true
+                        local useBinary = true
             if prefix:find("#") or prefix:find("%*") then useBinary = false end
             
             if useBinary and #prefix > 0 then
                 local startIndex = BinarySearchStart(bucket, prefix)
                 
                 if startIndex ~= -1 then
-                    local count = 0
+                    -- Collect ALL words that start with the prefix to sort them accurately
                     for i = startIndex, #bucket do
                         local w = bucket[i]
                         
                         if w:sub(1, #prefix) ~= prefix then break end
                         
                         checkWord(w)
-                        
-                        count = count + 1
-                        if count >= 3000 then break end
                     end
                 end
             else
-                local searchLimit = (sortMode == "Random") and 1000 or limit
+                -- Remove the hard limit for Longest/Shortest/Killer so it actually sees all options before sorting
+                local searchLimit = (sortMode == "Random") and 1000 or math.huge
+                
+                -- If we are searching the entire dictionary with no prefix, cap it to prevent lag
+                if bucket == Words and searchLimit == math.huge then searchLimit = 5000 end
+                
                 for _, w in ipairs(bucket) do
                     checkWord(w)
                     if #exacts >= searchLimit then break end
                 end
             end
-            
-            if sortMode == "Random" and #exacts > 0 then
-                shuffleTable(exacts)
-            end
-        end
-        return exacts, partials, maxPartialLen
-    end
 
     local exacts, partials, pLen = CollectMatches(searchPrefix, false)
 
