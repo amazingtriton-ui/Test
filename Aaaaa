@@ -373,9 +373,6 @@ local HardLetterScores = {
     mb = 17, sd = 35, dz = 34, md = 17, os = 9, od = 7, vy = 19,
     lh = 21, sf = 20, pf = 20
 }
-
-local removeLongHardLetters = false
-
 local function GetKillerScore(word)
     if not word then
         return 0
@@ -2971,64 +2968,4 @@ end)
 inputConn = UserInputService.InputBegan:Connect(function(input)
     if unloaded then return end
     if input.KeyCode == TOGGLE_KEY then ScreenGui.Enabled = not ScreenGui.Enabled end
-end)
-
-    local currentCPM = Config.CPM
-    local isBlatant = Config.Blatant
-    local useHumanization = Config.Humanize
-
--- Hard Combos GUI Setup
-local comboGuiParent = game:GetService("CoreGui") or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-
-local ComboScreenGui = Instance.new("ScreenGui")
-ComboScreenGui.Name = "HardComboGui"
-ComboScreenGui.ResetOnSpawn = false
-ComboScreenGui.Parent = comboGuiParent
-
-local ComboToggleBtn = Instance.new("TextButton")
-ComboToggleBtn.Size = UDim2.new(0, 220, 0, 50)
-ComboToggleBtn.Position = UDim2.new(0.5, -110, 0.1, 0)
-ComboToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-ComboToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
-ComboToggleBtn.Font = Enum.Font.GothamBold
-ComboToggleBtn.TextSize = 13
-ComboToggleBtn.Text = "enable something = false"
-ComboToggleBtn.Parent = ComboScreenGui
-
-local ComboUICorner = Instance.new("UICorner")
-ComboUICorner.CornerRadius = UDim.new(0, 6)
-ComboUICorner.Parent = ComboToggleBtn
-
--- Make it draggable
-local comboDragging, comboDragStart, comboStartPos
-ComboToggleBtn.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        comboDragging = true
-        comboDragStart = input.Position
-        comboStartPos = ComboToggleBtn.Position
-    end
-end)
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if comboDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - comboDragStart
-        ComboToggleBtn.Position = UDim2.new(comboStartPos.X.Scale, comboStartPos.X.Offset + delta.X, comboStartPos.Y.Scale, comboStartPos.Y.Offset + delta.Y)
-    end
-end)
-game:GetService("UserInputService").InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then 
-        comboDragging = false 
-    end
-end)
-
--- Toggle Logic
-ComboToggleBtn.MouseButton1Click:Connect(function()
-    removeLongHardLetters = not removeLongHardLetters
-
-    ComboToggleBtn.Text = "Remove Long Hard Letters = " .. tostring(removeLongHardLetters)
-
-    if removeLongHardLetters then
-        ComboToggleBtn.TextColor3 = Color3.fromRGB(80, 255, 80)
-    else
-        ComboToggleBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
-    end
 end)
