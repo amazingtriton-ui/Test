@@ -489,15 +489,11 @@ local function GetCurrentGameWord(providedFrame)
             WordMemoryState = cleanWord
         end
     else
-        -- No dots detected, which means this is a brand new word. Reset the memory!
+                -- No dots detected, which means this is a brand new word. Reset the memory!
         WordMemoryState = cleanWord
     end
     
     return WordMemoryState, censored
-end
-
-            --first modification-- Strip spaces, periods, and ellipsis characters that cause the "..." glitch --first Modification
-    return detected:lower():gsub(" ", ""):gsub("%.", ""):gsub("…", ""), censored
 end
 
 local function GetTurnInfo(providedFrame)
