@@ -423,6 +423,8 @@ local function Tween(obj, props, time)
     TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
 end
 
+local WordMemoryState = ""
+
 local function GetCurrentGameWord(providedFrame)
     local frame = providedFrame
     if not frame then
@@ -467,7 +469,33 @@ local function GetCurrentGameWord(providedFrame)
         if t:find("#") or t:find("%*") then censored = true end
         detected = detected .. t
     end
-            
+    
+    local rawWord = detected:lower():gsub(" ", "")
+    local cleanWord = rawWord:gsub("%.", ""):gsub("…", "")
+    
+    -- If we detect truncation dots, stitch the new visible text onto our memory
+    if rawWord:find("%.") or rawWord:find("…") then
+        if #WordMemoryState > 0 then
+            local overlapLen = 0
+            -- Find the exact overlap between the end of the memory and the start of the new text
+            for len = math.min(#cleanWord, #WordMemoryState), 1, -1 do
+                if WordMemoryState:sub(-len) == cleanWord:sub(1, len) then
+                    overlapLen = len
+                    break
+                end
+            end
+            WordMemoryState = WordMemoryState:sub(1, #WordMemoryState - overlapLen) .. cleanWord
+        else
+            WordMemoryState = cleanWord
+        end
+    else
+        -- No dots detected, which means this is a brand new word. Reset the memory!
+        WordMemoryState = cleanWord
+    end
+    
+    return WordMemoryState, censored
+end
+
             --first modification-- Strip spaces, periods, and ellipsis characters that cause the "..." glitch --first Modification
     return detected:lower():gsub(" ", ""):gsub("%.", ""):gsub("…", ""), censored
 end
