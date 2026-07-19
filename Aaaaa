@@ -286,7 +286,19 @@ bts = true,
 btn = true,
 lbl = true,
 omg = true,
-es = true
+es = true,
+adhd = true,
+lhd = true,
+hahaha = true,
+uhd = true, -- after these are testing words to see if they word the first 2 worked after uhd 
+fhd = true,
+qhd = true,
+wqhd = true,
+shd = true,
+vhd = true,
+ehd = true,
+mhd = true,
+phd = true
 }
 
 
@@ -355,15 +367,11 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    pt = 17, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
+    ze = 10, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
     hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
-    mb = 17, sd = 35, dz = 34,
-    pso = 17, nga = 18, ndo = 15, erk = 14, gly = 19,
-    obia = 14, lith = 16, Ning = 19, md = 17, sed = 18, umi = 20, ged = 19, ung = 19, ned = 18, ses = 12, ers = 19, esk = 18, ced = 18, outh = 20, ving = 21, fez = 17,
-    lain = 16, ous = 19, ert = 18, lle = 20, enso = 17, ely = 17, sia = 16, zing = 18, cide = 20, os = 9, dio = 12, nal = 19, lah = 18, ary = 18, rya = 20, yal = 17, lias = 15,
-    ames = 14, cups = 20, od = 7, ais = 13, ento = 14, ney = 18, aged = 19, vy = 19, eren = 20, pta = 20, kous = 21, oes = 21,
-
+    mb = 17, sd = 35, dz = 34, md = 17, os = 9, od = 7, vy = 19,
+    lh = 21, sf = 20, pf = 20
 }
 
 local removeLongHardLetters = false
@@ -373,23 +381,12 @@ local function GetKillerScore(word)
         return 0
     end
 
-    local lastFour = word:sub(-4)
-    local lastThree = word:sub(-3)
     local lastTwo = word:sub(-2)
     local lastChar = word:sub(-1)
 
-    local score
+    return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
+end
 
-    if removeLongHardLetters then
-        -- Only check 2- and 1-letter endings
-        score = HardLetterScores[lastTwo] or HardLetterScores[lastChar]
-    else
-        -- Check 4, 3, 2, then 1
-        score = HardLetterScores[lastFour]
-            or HardLetterScores[lastThree]
-            or HardLetterScores[lastTwo]
-            or HardLetterScores[lastChar]
-    end
 
     return score or 0
 end
