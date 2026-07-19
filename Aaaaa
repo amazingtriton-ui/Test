@@ -467,8 +467,9 @@ local function GetCurrentGameWord(providedFrame)
         if t:find("#") or t:find("%*") then censored = true end
         detected = detected .. t
     end
-    
-    return detected:lower():gsub(" ", ""), censored
+            
+            --first modification-- Strip spaces, periods, and ellipsis characters that cause the "..." glitch --first Modification
+    return detected:lower():gsub(" ", ""):gsub("%.", ""):gsub("…", ""), censored
 end
 
 local function GetTurnInfo(providedFrame)
@@ -2048,35 +2049,41 @@ local function SmartType(targetWord, currentDetected, isCorrection, bypassTurn)
                 end
             end
 
-            -- Pre-submission verify
-            local finalCheck = GetGameTextBox()
+                local finalCheck = GetGameTextBox()
             if not riskyMistakes then
                 task.wait(0.1)
                 finalCheck = GetGameTextBox()
-                if finalCheck and finalCheck.Text ~= targetWord then
-                     StatusText.Text = "Typing mismatch detected!"
-                     StatusText.TextColor3 = THEME.Warning
-                     Backspace(#finalCheck.Text)
-                     
-                     isTyping = false
-                     forceUpdateList = true
-                     return
+                if finalCheck then
+                    -- Fix for the "..." truncation bug on long words
+                    local checkText = finalCheck.Text:lower():gsub(" ", ""):gsub("%.", ""):gsub("…", "")
+                    if checkText ~= "" and targetWord:sub(-#checkText) ~= checkText then
+                         StatusText.Text = "Typing mismatch detected!"
+                         StatusText.TextColor3 = THEME.Warning
+                         Backspace(#finalCheck.Text)
+                         
+                         isTyping = false
+                         forceUpdateList = true
+                         return
+                    end
                 end
             end
+
 
             PressEnter()
             
             local verifyStart = tick()
             local accepted = false
-            
             while (tick() - verifyStart) < 1.5 do
                 local currentCheck = GetCurrentGameWord()
-                if currentCheck == "" or (currentCheck ~= targetWord and currentCheck ~= currentDetected) then
+                -- Check if the current word matches the end of the target word (accounts for truncation)
+                local isMatch = (currentCheck == targetWord) or (currentCheck ~= "" and targetWord:sub(-#currentCheck) == currentCheck)
+                if currentCheck == "" or (not isMatch and currentCheck ~= currentDetected) then
                      accepted = true
                      break
                 end
                 task.wait(0.05)
             end
+
 
             if not accepted then
                 Blacklist[targetWord] = true
@@ -2164,6 +2171,7 @@ local function SmartType(targetWord, currentDetected, isCorrection, bypassTurn)
                 end
             end
 
+
             -- Pre-submission verify
             if not riskyMistakes then
                 -- Wait a moment for last character to register
@@ -2188,7 +2196,9 @@ local function SmartType(targetWord, currentDetected, isCorrection, bypassTurn)
             
             while (tick() - verifyStart) < 1.5 do
                 local currentCheck = GetCurrentGameWord()
-                if currentCheck == "" or (currentCheck ~= targetWord and currentCheck ~= currentDetected) then
+                -- Check if the current word matches the end of the target word (accounts for truncation)
+                local isMatch = (currentCheck == targetWord) or (currentCheck ~= "" and targetWord:sub(-#currentCheck) == currentCheck)
+                if currentCheck == "" or (not isMatch and currentCheck ~= currentDetected) then
                      accepted = true
                      break
                 end
@@ -2198,19 +2208,24 @@ local function SmartType(targetWord, currentDetected, isCorrection, bypassTurn)
             if not accepted then
                 
                 local postCheck = GetGameTextBox()
-                if postCheck and postCheck.Text == targetWord then
-                     StatusText.Text = "Enter failed? Retrying..."
-                     PressEnter()
-                     task.wait(0.5)
-                     if GetCurrentGameWord() == currentDetected then
-                         StatusText.Text = "Submission Failed (Lag?)"
-                         StatusText.TextColor3 = THEME.Warning
-                         Backspace(#targetWord)
-                         isTyping = false
-                         forceUpdateList = true
-                         return
+                if postCheck then
+                     local checkText = postCheck.Text:lower():gsub(" ", ""):gsub("%.", ""):gsub("…", "")
+                     if checkText ~= "" and targetWord:sub(-#checkText) == checkText then
+                         StatusText.Text = "Enter failed? Retrying..."
+                         PressEnter()
+                         task.wait(0.5)
+                         if GetCurrentGameWord() == currentDetected then
+                             StatusText.Text = "Submission Failed (Lag?)"
+                             StatusText.TextColor3 = THEME.Warning
+                             Backspace(#targetWord)
+                             isTyping = false
+                             forceUpdateList = true
+                             return
+                         end
                      end
                 end
+
+
 
                 Blacklist[targetWord] = true
                 for k, list in pairs(RandomOrderCache) do
