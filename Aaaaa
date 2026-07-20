@@ -290,6 +290,21 @@ es = true,
 adhd = true,
 lhd = true,
 hahaha = true,
+epipen = true,
+epipens = true,
+glyburide = true,
+glyburides = true,
+gg = true,
+ggs = true,
+qq = true,
+imo = true,
+omg = true,
+ong = true,
+pmo = true,
+yw = true,
+sybau = true,
+istg = true,
+kk = true,
 uhd = true, -- after these are testing words to see if they word the first 2 worked after uhd 
 fhd = true,
 qhd = true,
@@ -371,7 +386,7 @@ local HardLetterScores = {
     hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
     mb = 17, sd = 35, dz = 34, md = 17, os = 9, od = 7, vy = 19,
-    lh = 21, sf = 20, pf = 20
+    lh = 21, sf = 20, pf = 20, sb = 21
 }
 local function GetKillerScore(word)
     if not word then
