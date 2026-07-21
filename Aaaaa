@@ -216,7 +216,6 @@ local uselessEnglishWords = {
     boxaalimstopgivingmefakesolvesx = true,
     aceabrowhataretheselongsolves = true,
     aceasingeringermaterialistically = true,
-    fsafeds = true,
     zieswallahiimcooked = true,
     helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
     ilswallahiimcooked = true,
@@ -256,7 +255,11 @@ xidontknowthese = true,
 ["[Added 35% New Words that works]"] = true,
 ["[WARNING]"] = true,
 ["[NEVER JOIN PRO SERVERS]"] = true,
-olarapexionalization = true
+olarapexionalization = true,
+tingnewsolves = true,
+riniclippedthisx = true,
+rattledtoastclippedthisx = true
+
 }
 
 local usefulEnglishWords = {
@@ -265,7 +268,6 @@ local usefulEnglishWords = {
     larper = true,
     larps = true,
     larpers = true,
-    larpings = true,
     so = true,
     fsr = true,
     ugyurs = true,
@@ -305,6 +307,10 @@ yw = true,
 sybau = true,
 istg = true,
 kk = true,
+stiybt = true,
+lhota = true,
+hlai = true,
+hlais = true,
 uhd = true, -- after these are testing words to see if they word the first 2 worked after uhd 
 fhd = true,
 qhd = true,
@@ -313,7 +319,14 @@ shd = true,
 vhd = true,
 ehd = true,
 mhd = true,
-phd = true
+phd = true,
+lhaza = true,
+lhozhag = true,
+lhunzhub = true,
+lhuntse = true,
+lhuentse = true, 
+dm = true,
+dms = true
 }
 
 
