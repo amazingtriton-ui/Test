@@ -386,9 +386,11 @@ local HardLetterScores = {
     ze = 10, zy = 15, yc = 20, nk = 10, bt = 19, bk = 18, pk = 20, hd = 18, 
     hl = 15, fd = 20, kt = 20, sz = 17, ez = 14, ky = 8, py = 7, dh = 14, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
-    mb = 45, sd = 45, dz = 45, md = 21, os = 9, od = 7, vy = 21,
-    lh = 45, sf = 45, pf = 45, sb = 45, dm = 45, wt = 19, fc = 21, tx = 45, hm = 45 -- 45 = always appear
+    mb = 17, sd = 21, dz = 34, md = 19, os = 9, od = 7, vy = 20,
+    lh = 21, sf = 20, pf = 20, dm = 45, wt = 19, fc = 21, tx = 45, hm = 45, 
+    sb = 45 -- 45 = always appear
 }
+
 local function GetKillerScore(word)
     if not word then
         return 0
