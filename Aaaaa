@@ -290,7 +290,6 @@ lbl = true,
 omg = true,
 es = true,
 adhd = true,
-lhd = true,
 hahaha = true,
 epipen = true,
 epipens = true,
@@ -311,22 +310,11 @@ stiybt = true,
 lhota = true,
 hlai = true,
 hlais = true,
-uhd = true, -- after these are testing words to see if they word the first 2 worked after uhd 
-fhd = true,
-qhd = true,
-wqhd = true,
-shd = true,
-vhd = true,
-ehd = true,
-mhd = true,
-phd = true,
-lhaza = true,
-lhozhag = true,
-lhunzhub = true,
-lhuntse = true,
-lhuentse = true, 
 dm = true,
-dms = true
+dms = true,
+lherzolitic = true,
+lhotshampa = true,
+lhiamba = true
 }
 
 
@@ -395,11 +383,12 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    ze = 10, zy = 10, yc = 19, nk = 8, bt = 12, bk = 15, pk = 17, hd = 16, 
-    hl = 15, fd = 15, kt = 16, sz = 15, ez = 13, ky = 9, py = 9, dh = 14, ly = 8,
+    ze = 10, zy = 15, yc = 20, nk = 10, bt = 19, bk = 18, pk = 20, hd = 18, 
+    hl = 15, fd = 20, kt = 20, sz = 17, ez = 14, ky = 8, py = 7, dh = 14, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
-    mb = 17, sd = 35, dz = 34, md = 17, os = 9, od = 7, vy = 19,
-    lh = 21, sf = 20, pf = 20, sb = 21
+    mb = 17, sd = 21, dz = 34, md = 19, os = 9, od = 7, vy = 20,
+    lh = 21, sf = 20, pf = 20, sb = 21, dm = 45, wt = 19, fc = 21, tx = 45, hm = 45 
+    sb = 45 -- 45 = always appear
 }
 local function GetKillerScore(word)
     if not word then
