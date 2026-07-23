@@ -382,12 +382,12 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    ze = 8, zy = 17, yc = 21, nk = 11, bt = 21, bk = 21, pk = 21, hd = 21, 
+    ze = 8, zy = 17, yc = 21, nk = 11, bt = 21, bk = 21, pk = 21, hd = 21,
     hl = 20, fd = 21, kt = 21, sz = 20, ez = 17, ky = 9, py = 8, dh = 20, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
     mb = 20, sd = 21, dz = 21, md = 21, os = 7, od = 8, vy = 21,
-    lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21, 
-    sb = 21, er = 12, uv = 17, = gy = 10, yg = 21, xo = 17
+    lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
+    sb = 21, er = 12, uv = 17, gy = 10, yg = 21, xo = 17
 }
 
 local function GetKillerScore(word)
