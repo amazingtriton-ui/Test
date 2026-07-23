@@ -272,7 +272,6 @@ local usefulEnglishWords = {
     fsr = true,
     ugyurs = true,
     xoxo = true,
-    xoxos = true,
     lgbt = true,
     lgbtq = true,
     lgbtqia = true,
@@ -294,7 +293,7 @@ hahaha = true,
 epipen = true,
 epipens = true,
 glyburide = true,
-glyburides = true,
+lhd = true,
 gg = true,
 ggs = true,
 qq = true,
@@ -383,12 +382,12 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    ze = 10, zy = 15, yc = 20, nk = 10, bt = 19, bk = 18, pk = 20, hd = 18, 
-    hl = 15, fd = 20, kt = 20, sz = 17, ez = 14, ky = 8, py = 7, dh = 14, ly = 8,
+    ze = 8, zy = 17, yc = 21, nk = 11, bt = 21, bk = 21, pk = 21, hd = 21, 
+    hl = 20, fd = 21, kt = 21, sz = 20, ez = 17, ky = 9, py = 8, dh = 20, ly = 8,
     x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
-    mb = 17, sd = 21, dz = 34, md = 19, os = 9, od = 7, vy = 20,
-    lh = 21, sf = 20, pf = 20, dm = 45, wt = 19, fc = 21, tx = 45, hm = 45, 
-    sb = 45 -- 45 = always appear
+    mb = 20, sd = 21, dz = 21, md = 21, os = 7, od = 8, vy = 21,
+    lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21, 
+    sb = 21, er = 12, uv = 17, = gy = 10, yg = 21, xo = 17
 }
 
 local function GetKillerScore(word)
