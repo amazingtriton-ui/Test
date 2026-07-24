@@ -250,15 +250,18 @@ local uselessEnglishWords = {
     ["ayll████"] = true,
 xidontknowthese = true,
 ["pexelizumab|||||||||||||||||||||||||||||||"] = true,
-["[UPDATE: 50]"] = true,
-["[Updated Dictionary]"] = true,
-["[Added 35% New Words that works]"] = true,
-["[WARNING]"] = true,
-["[NEVER JOIN PRO SERVERS]"] = true,
+["[Update:50]"] = true,
+["[updateddictionary]"] = true,
+["[added35%newwordsthatworks]"] = true,
+["[warning]"] = true,
+["[neverjoinproservers]"] = true,
 olarapexionalization = true,
 tingnewsolves = true,
 riniclippedthisx = true,
-rattledtoastclippedthisx = true
+rattledtoastclippedthisx = true,
+["timo -(justputtimothybro)"] = true,
+thelegendarywustjaeritex = true,
+hahaniteniteszx = true
 
 }
 
@@ -313,7 +316,9 @@ dm = true,
 dms = true,
 lherzolitic = true,
 lhotshampa = true,
-lhiamba = true
+lhiamba = true,
+sphenopalatineganglioneuralgia = true,
+anaana = true
 }
 
 
@@ -382,12 +387,13 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
-    ze = 8, zy = 17, yc = 21, nk = 11, bt = 21, bk = 21, pk = 21, hd = 21,
-    hl = 20, fd = 21, kt = 21, sz = 20, ez = 17, ky = 9, py = 8, dh = 20, ly = 8,
-    x = 6, z = 7, q = 5, j = 4, v = 3, y = 7, k = 7,
-    mb = 20, sd = 21, dz = 21, md = 21, os = 7, od = 8, vy = 21,
+    ze = 17, zy = 19, yc = 21, nk = 19, bt = 21, bk = 21, pk = 21, hd = 21,
+    hl = 20, fd = 21, kt = 21, sz = 20, ez = 17, ky = 11, py = 11, dh = 20, ly = 10,
+    x = 10, z = 8, q = 7, j = 7, v = 9, y = 8, k = 9,
+    mb = 20, sd = 21, dz = 21, md = 21, os = 11, od = 8, vy = 21,
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
-    sb = 21, er = 12, uv = 17, gy = 10, yg = 21, xo = 17
+    sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 17, cw = 21,
+    lw = 20
 }
 
 local function GetKillerScore(word)
