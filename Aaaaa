@@ -400,7 +400,8 @@ local HardLetterScores = {
     mb = 20, sd = 21, dz = 21, md = 21, os = 11, od = 8, vy = 21,
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
     sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 17, cw = 21,
-    lw = 20, yp = 21, jy = 21
+    lw = 20, yp = 21, jy = 21, nz = 21, dae = 17, aly = 17, pse = 17, epia = 48, ving = 18,
+    jji = 17, ers = 17, ndo = 17, nga = 17, adz = 17, tze = 17, tsi = 17, ror = 17, gia = 17
 }
 
 local function GetKillerScore(word)
@@ -408,10 +409,11 @@ local function GetKillerScore(word)
         return 0
     end
 
-    local lastTwo = word:sub(-2)
-    local lastChar = word:sub(-1)
-
-    return HardLetterScores[lastTwo] or HardLetterScores[lastChar] or 0
+    return HardLetterScores[word:sub(-4)]
+        or HardLetterScores[word:sub(-3)]
+        or HardLetterScores[word:sub(-2)]
+        or HardLetterScores[word:sub(-1)]
+        or 0
 end
 
 local function getDistance(s1, s2)
