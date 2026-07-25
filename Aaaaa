@@ -318,7 +318,14 @@ lherzolitic = true,
 lhotshampa = true,
 lhiamba = true,
 sphenopalatineganglioneuralgia = true,
-anaana = true
+keychain = true,
+keychains = true,
+eep = true,
+eeps = true,
+eepy = true,
+eeprom = true,
+eeproms = true,
+roblox = true
 }
 
 
@@ -393,7 +400,7 @@ local HardLetterScores = {
     mb = 20, sd = 21, dz = 21, md = 21, os = 11, od = 8, vy = 21,
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
     sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 17, cw = 21,
-    lw = 20
+    lw = 20, yp = 21, jy = 21
 }
 
 local function GetKillerScore(word)
