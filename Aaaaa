@@ -325,7 +325,18 @@ eeps = true,
 eepy = true,
 eeprom = true,
 eeproms = true,
-roblox = true
+roblox = true,
+yangchuanosauruses = true
+allylisopropylacemides = true,
+nzi = true,
+nzara = true,
+nzima = true,
+nzem = true,
+carboxyhemoglobin = true,
+wtv = true,
+imao = true,
+lmfao = true,
+jklm = true,
 }
 
 
@@ -399,9 +410,11 @@ local HardLetterScores = {
     x = 10, z = 8, q = 7, j = 7, v = 9, y = 8, k = 9,
     mb = 20, sd = 21, dz = 21, md = 21, os = 11, od = 8, vy = 21,
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
-    sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 17, cw = 21,
-    lw = 20, yp = 21, jy = 21, nz = 21, dae = 17, aly = 17, pse = 17, epia = 48, ving = 18,
-    jji = 17, ers = 17, ndo = 17, nga = 17, adz = 17, tze = 17, tsi = 17, ror = 17, gia = 17
+    sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 19, cw = 21,
+    lw = 20, yp = 21, jy = 21, nz = 21, dae = 20, aly = 20, pse = 20, epia = 48, ving = 29,
+    jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tsi = 20, ror = 20, gia = 20,
+    nz = 47
+
 }
 
 local function GetKillerScore(word)
