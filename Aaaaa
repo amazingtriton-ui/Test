@@ -110,9 +110,13 @@ local isMyTurnLogDetected = false
 local logRequiredLetters = ""
 local turnExpiryTime = 0
 local Blacklist = {}
-
 if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
 for _, w in ipairs(Config.BlacklistedWords) do Blacklist[w] = true end
+
+-- NEW: Setup Whitelist Memory
+local Whitelist = {}
+if not Config.WhitelistedWords then Config.WhitelistedWords = {} end
+for _, w in ipairs(Config.WhitelistedWords) do Whitelist[w] = true end
 
 local UsedWords = {}
 local RandomOrderCache = {}
@@ -1531,15 +1535,229 @@ RefreshCustomWords()
 if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
 for _, w in ipairs(Config.BlacklistedWords) do Blacklist[w] = true end
 
+-- ==========================================
+-- BUTTON RESIZING (Blacklist & Whitelist)
+-- ==========================================
 local ManageBlacklistBtn = Instance.new("TextButton", TogglesFrame)
 ManageBlacklistBtn.Text = "Manage Blacklist"
 ManageBlacklistBtn.Font = Enum.Font.GothamMedium
 ManageBlacklistBtn.TextSize = 11
 ManageBlacklistBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 ManageBlacklistBtn.BackgroundColor3 = THEME.Background
-ManageBlacklistBtn.Size = UDim2.new(0, 265, 0, 24)
+ManageBlacklistBtn.Size = UDim2.new(0, 130, 0, 24) -- Resized to half width
 ManageBlacklistBtn.Position = UDim2.new(0, 15, 0, 235) 
 Instance.new("UICorner", ManageBlacklistBtn).CornerRadius = UDim.new(0, 4)
+
+local ManageWhitelistBtn = Instance.new("TextButton", TogglesFrame)
+ManageWhitelistBtn.Text = "Manage Whitelist"
+ManageWhitelistBtn.Font = Enum.Font.GothamMedium
+ManageWhitelistBtn.TextSize = 11
+ManageWhitelistBtn.TextColor3 = THEME.Success
+ManageWhitelistBtn.BackgroundColor3 = THEME.Background
+ManageWhitelistBtn.Size = UDim2.new(0, 130, 0, 24) -- Placed next to Blacklist
+ManageWhitelistBtn.Position = UDim2.new(0, 150, 0, 235) 
+Instance.new("UICorner", ManageWhitelistBtn).CornerRadius = UDim.new(0, 4)
+
+-- ==========================================
+-- WHITELIST MANAGER GUI
+-- ==========================================
+local WhitelistFrame = Instance.new("Frame", ScreenGui)
+WhitelistFrame.Name = "WhitelistFrame"
+WhitelistFrame.Size = UDim2.new(0, 250, 0, 350)
+WhitelistFrame.Position = UDim2.new(0.5, -385, 0.5, -175)
+WhitelistFrame.BackgroundColor3 = THEME.Background
+WhitelistFrame.Visible = false
+WhitelistFrame.ClipsDescendants = true
+EnableDragging(WhitelistFrame)
+Instance.new("UICorner", WhitelistFrame).CornerRadius = UDim.new(0, 8)
+local WLStroke = Instance.new("UIStroke", WhitelistFrame)
+WLStroke.Color = THEME.Success
+WLStroke.Transparency = 0.5
+WLStroke.Thickness = 2
+
+local WLHeader = Instance.new("TextLabel", WhitelistFrame)
+WLHeader.Text = "Whitelist Manager"
+WLHeader.Font = Enum.Font.GothamBold
+WLHeader.TextSize = 14
+WLHeader.TextColor3 = THEME.Text
+WLHeader.Size = UDim2.new(1, 0, 0, 35)
+WLHeader.BackgroundTransparency = 1
+
+local WLCloseBtn = Instance.new("TextButton", WhitelistFrame)
+WLCloseBtn.Text = "X"
+WLCloseBtn.Font = Enum.Font.GothamBold
+WLCloseBtn.TextSize = 14
+WLCloseBtn.TextColor3 = THEME.Success
+WLCloseBtn.Size = UDim2.new(0, 30, 0, 30)
+WLCloseBtn.Position = UDim2.new(1, -30, 0, 2)
+WLCloseBtn.BackgroundTransparency = 1
+WLCloseBtn.MouseButton1Click:Connect(function() WhitelistFrame.Visible = false end)
+
+ManageWhitelistBtn.MouseButton1Click:Connect(function()
+    WhitelistFrame.Visible = not WhitelistFrame.Visible
+    WhitelistFrame.Parent = nil
+    WhitelistFrame.Parent = ScreenGui
+end)
+
+local WLSearchBox = Instance.new("TextBox", WhitelistFrame)
+WLSearchBox.Font = Enum.Font.Gotham
+WLSearchBox.TextSize = 12
+WLSearchBox.BackgroundColor3 = THEME.ItemBG
+WLSearchBox.Size = UDim2.new(1, -20, 0, 24)
+WLSearchBox.Position = UDim2.new(0, 10, 0, 35)
+Instance.new("UICorner", WLSearchBox).CornerRadius = UDim.new(0, 4)
+SetupPhantomBox(WLSearchBox, "Search whitelist...")
+
+local WLScroll = Instance.new("ScrollingFrame", WhitelistFrame)
+WLScroll.Size = UDim2.new(1, -10, 1, -110)
+WLScroll.Position = UDim2.new(0, 5, 0, 65)
+WLScroll.BackgroundTransparency = 1
+WLScroll.ScrollBarThickness = 2
+WLScroll.ScrollBarImageColor3 = THEME.Success
+WLScroll.CanvasSize = UDim2.new(0,0,0,0)
+
+local WLListLayout = Instance.new("UIListLayout", WLScroll)
+WLListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+WLListLayout.Padding = UDim.new(0, 2)
+
+local WLCommandBox = Instance.new("TextBox", WhitelistFrame)
+WLCommandBox.Font = Enum.Font.Gotham
+WLCommandBox.TextSize = 12
+WLCommandBox.BackgroundColor3 = THEME.ItemBG
+WLCommandBox.Size = UDim2.new(0, 170, 0, 24)
+WLCommandBox.Position = UDim2.new(0, 10, 1, -35)
+Instance.new("UICorner", WLCommandBox).CornerRadius = UDim.new(0, 4)
+SetupPhantomBox(WLCommandBox, "add / remove")
+
+local WLExecuteBtn = Instance.new("TextButton", WhitelistFrame)
+WLExecuteBtn.Text = "Exe"
+WLExecuteBtn.Font = Enum.Font.GothamBold
+WLExecuteBtn.TextSize = 11
+WLExecuteBtn.TextColor3 = THEME.Success
+WLExecuteBtn.BackgroundColor3 = THEME.ItemBG
+WLExecuteBtn.Size = UDim2.new(0, 50, 0, 24)
+WLExecuteBtn.Position = UDim2.new(1, -60, 1, -35)
+Instance.new("UICorner", WLExecuteBtn).CornerRadius = UDim.new(0, 4)
+
+local function RefreshWhitelist()
+    for _, c in ipairs(WLScroll:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+    
+    local queryRaw = WLSearchBox.Text
+    local query = (queryRaw == "Search whitelist...") and "" or string.lower(string.gsub(queryRaw, "[%s%c]+", ""))
+    local list = Config.WhitelistedWords or {}
+    local shownCount = 0
+    
+    for _, w in ipairs(list) do
+        if query == "" or string.find(w, query, 1, true) then
+            shownCount = shownCount + 1
+            local row = Instance.new("Frame", WLScroll)
+            row.Size = UDim2.new(1, -6, 0, 22)
+            row.BackgroundColor3 = (shownCount % 2 == 0) and Color3.fromRGB(25,25,30) or Color3.fromRGB(30,30,35)
+            row.BorderSizePixel = 0
+            Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+            
+            local lbl = Instance.new("TextLabel", row)
+            lbl.Text = w
+            lbl.Font = Enum.Font.Gotham
+            lbl.TextSize = 12
+            lbl.TextColor3 = THEME.Success
+            lbl.Size = UDim2.new(1, -30, 1, 0)
+            lbl.Position = UDim2.new(0, 5, 0, 0)
+            lbl.BackgroundTransparency = 1
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+            local del = Instance.new("TextButton", row)
+            del.Text = "X"
+            del.Font = Enum.Font.GothamBold
+            del.TextSize = 11
+            del.TextColor3 = Color3.fromRGB(255, 80, 80)
+            del.Size = UDim2.new(0, 22, 1, 0)
+            del.Position = UDim2.new(1, -22, 0, 0)
+            del.BackgroundTransparency = 1
+            
+            del.MouseButton1Click:Connect(function()
+                for idx, savedWord in ipairs(Config.WhitelistedWords) do
+                    if savedWord == w then table.remove(Config.WhitelistedWords, idx) break end
+                end
+                Whitelist[w] = nil
+                SaveConfig()
+                RefreshWhitelist()
+                ShowToast("Un-whitelisted: " .. w, "warning")
+            end)
+        end
+    end
+    WLScroll.CanvasSize = UDim2.new(0, 0, 0, shownCount * 24)
+end
+
+WLSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshWhitelist)
+
+WLExecuteBtn.MouseButton1Click:Connect(function()
+    local text = WLCommandBox.Text
+    if text == "add / remove" or text == "" then return end
+    
+    local args = {}
+    for word in string.gmatch(text, "%S+") do table.insert(args, string.lower(word)) end
+    
+    local command = args[1] or ""
+    local word1 = args[2] and string.gsub(args[2], "[%s%c]+", "") or ""
+
+    if command == "add" then
+        if word1 == "" then ShowToast("Specify a word to whitelist!", "error") return end
+        
+        -- Also add to dictionary automatically if it's missing
+        local inDict = false
+        for _, dictWord in ipairs(Words) do
+            if dictWord == word1 then inDict = true break end
+        end
+        if not inDict then
+            table.insert(Words, word1)
+            local c = word1:sub(1,1)
+            if c == "" then c = "#" end
+            Buckets[c] = Buckets[c] or {}
+            table.insert(Buckets[c], word1)
+        end
+        
+        local exists = false
+        for _, w in ipairs(Config.WhitelistedWords) do
+            if w == word1 then exists = true break end
+        end
+        
+        if exists then
+            ShowToast("Word is already whitelisted!", "warning")
+        else
+            table.insert(Config.WhitelistedWords, word1)
+            Whitelist[word1] = true
+            ShowToast("Whitelisted: " .. word1, "success")
+        end
+        
+    elseif command == "remove" then
+        if word1 == "" then ShowToast("Specify a word to remove!", "error") return end
+        local found = false
+        for i, w in ipairs(Config.WhitelistedWords) do
+            if w == word1 then
+                table.remove(Config.WhitelistedWords, i)
+                Whitelist[w] = nil
+                found = true
+                ShowToast("Removed from whitelist: " .. w, "warning")
+                break
+            end
+        end
+        if not found then ShowToast("Word not found in whitelist!", "error") end
+    else
+        ShowToast("Use: add [word] or remove [word]", "error")
+    end
+
+    SaveConfig()
+    WLCommandBox.Text = ""
+    WLCommandBox:ReleaseFocus()
+    RefreshWhitelist()
+    if UpdateList then forceUpdateList = true end -- Force refresh the words list UI
+end)
+
+RefreshWhitelist()
+
 
 local BlacklistFrame = Instance.new("Frame", ScreenGui)
 BlacklistFrame.Name = "BlacklistFrame"
@@ -2655,24 +2873,34 @@ UpdateList = function(detectedText, requiredLetter)
             local limit = 10000
             
             if bucket then
+
                 local checkWord = function(w)
                     if Blacklist[w] or UsedWords[w] then return end
                     
-                    -- Check for main list filtering (suffix/length)
-                    if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
+                    local isWhitelisted = Whitelist[w]
                     
-                    local isLengthMatch = true
-                    if not tryFallbackLengths and lengthMode > 0 then
-                        isLengthMatch = (#w == lengthMode)
-                    elseif tryFallbackLengths and lengthMode > 0 then
-                         isLengthMatch = true
+                    -- If it is NOT whitelisted, apply normal filters
+                    if not isWhitelisted then
+                        -- Check for main list filtering (suffix/length)
+                        if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
+                        
+                        local isLengthMatch = true
+                        if not tryFallbackLengths and lengthMode > 0 then
+                            isLengthMatch = (#w == lengthMode)
+                        elseif tryFallbackLengths and lengthMode > 0 then
+                             isLengthMatch = true
+                        end
+                        
+                        if not isLengthMatch then return end
                     end
-                    
-                    if not isLengthMatch then return end
 
                     local mLen = GetMatchLength(w, prefix)
                     if mLen == #prefix then
-                        table.insert(exacts, w)
+                        if isWhitelisted then
+                            table.insert(exacts, 1, w) -- Force to the VERY TOP of the list
+                        else
+                            table.insert(exacts, w)
+                        end
                     elseif #exacts == 0 then
                         if mLen > maxPartialLen then
                             maxPartialLen = mLen
