@@ -1524,8 +1524,12 @@ end)
 RefreshCustomWords()
 
 -- ==========================================
--- NEW: BLACKLIST MANAGER GUI & LOGIC
+-- OPTIMIZED BLACKLIST MANAGER GUI & LOGIC
 -- ==========================================
+
+-- Ensure Config exists to prevent looping errors
+if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
+for _, w in ipairs(Config.BlacklistedWords) do Blacklist[w] = true end
 
 local ManageBlacklistBtn = Instance.new("TextButton", TogglesFrame)
 ManageBlacklistBtn.Text = "Manage Blacklist"
@@ -1533,8 +1537,8 @@ ManageBlacklistBtn.Font = Enum.Font.GothamMedium
 ManageBlacklistBtn.TextSize = 11
 ManageBlacklistBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 ManageBlacklistBtn.BackgroundColor3 = THEME.Background
-ManageBlacklistBtn.Size = UDim2.new(0, 265, 0, 24) -- Made it wide
-ManageBlacklistBtn.Position = UDim2.new(0, 15, 0, 235) -- Moved it to a new row below Server Browser
+ManageBlacklistBtn.Size = UDim2.new(0, 265, 0, 24)
+ManageBlacklistBtn.Position = UDim2.new(0, 15, 0, 235) 
 Instance.new("UICorner", ManageBlacklistBtn).CornerRadius = UDim.new(0, 4)
 
 local BlacklistFrame = Instance.new("Frame", ScreenGui)
@@ -1621,13 +1625,13 @@ local function RefreshBlacklist()
     end
     
     local queryRaw = BLSearchBox.Text
-    local query = (queryRaw == "Search blacklist...") and "" or queryRaw:lower():gsub("[%s%c]+", "")
+    local query = (queryRaw == "Search blacklist...") and "" or string.lower(string.gsub(queryRaw, "[%s%c]+", ""))
     
     local list = Config.BlacklistedWords or {}
     local shownCount = 0
     
-    for i, w in ipairs(list) do
-        if query == "" or w:find(query, 1, true) then
+    for _, w in ipairs(list) do
+        if query == "" or string.find(w, query, 1, true) then
             shownCount = shownCount + 1
             local row = Instance.new("Frame", BLScroll)
             row.Size = UDim2.new(1, -6, 0, 22)
@@ -1655,7 +1659,13 @@ local function RefreshBlacklist()
             del.BackgroundTransparency = 1
             
             del.MouseButton1Click:Connect(function()
-                table.remove(Config.BlacklistedWords, i)
+                -- Safe removal logic to prevent list corruption
+                for idx, savedWord in ipairs(Config.BlacklistedWords) do
+                    if savedWord == w then
+                        table.remove(Config.BlacklistedWords, idx)
+                        break
+                    end
+                end
                 Blacklist[w] = nil
                 SaveConfig()
                 RefreshBlacklist()
@@ -1670,29 +1680,34 @@ BLSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshBlacklist)
 
 BLExecuteBtn.MouseButton1Click:Connect(function()
     local text = BLCommandBox.Text
-    if text == "add / remove / replace" then return end
+    if text == "add / remove / replace" or text == "" then return end
     
-    local args = text:split(" ")
-    local command = args[1] and args[1]:lower() or ""
-    local word1 = args[2] and args[2]:gsub("[%s%c]+", ""):lower() or ""
-    local word2 = args[3] and args[3]:gsub("[%s%c]+", ""):lower() or ""
+    -- Universal safe string parsing (Works on all executors)
+    local args = {}
+    for word in string.gmatch(text, "%S+") do
+        table.insert(args, string.lower(word))
+    end
     
-    if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
+    local command = args[1] or ""
+    local word1 = args[2] and string.gsub(args[2], "[%s%c]+", "") or ""
+    local word2 = args[3] and string.gsub(args[3], "[%s%c]+", "") or ""
 
     if command == "add" then
         if word1 == "" then ShowToast("Specify a word to blacklist!", "error") return end
-        if #word1 > 35 then ShowToast("Word is too long to blacklist!", "error") return end
+        if #word1 > 35 then ShowToast("Word is too long and was ignored!", "error") return end
         
+        local exists = false
         for _, w in ipairs(Config.BlacklistedWords) do
-            if w == word1 then
-                ShowToast("Word is already blacklisted!", "warning")
-                return
-            end
+            if w == word1 then exists = true break end
         end
         
-        table.insert(Config.BlacklistedWords, word1)
-        Blacklist[word1] = true
-        ShowToast("Blacklisted: " .. word1, "success")
+        if exists then
+            ShowToast("Word is already blacklisted!", "warning")
+        else
+            table.insert(Config.BlacklistedWords, word1)
+            Blacklist[word1] = true
+            ShowToast("Blacklisted: " .. word1, "success")
+        end
         
     elseif command == "remove" then
         if word1 == "" then ShowToast("Specify a word to remove!", "error") return end
@@ -1711,7 +1726,7 @@ BLExecuteBtn.MouseButton1Click:Connect(function()
         
     elseif command == "replace" then
         if word1 == "" or word2 == "" then ShowToast("Usage: replace [old] [new]", "error") return end
-        if #word2 > 35 then ShowToast("New word is too long!", "error") return end
+        if #word2 > 35 then ShowToast("New word is too long and was ignored!", "error") return end
         
         local found = false
         for i, w in ipairs(Config.BlacklistedWords) do
