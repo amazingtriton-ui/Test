@@ -3,8 +3,19 @@ local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local RbxAnalyticsService = game:GetService("RbxAnalyticsService")
 
+-- ==========================================
+-- EXECUTOR SAFETY POLYFILLS
+-- Prevents 'nil value' crashes if functions are missing
+-- ==========================================
 local cloneref = cloneref or function(o) return o end
 local gethui = gethui or function() return CoreGui end
+local request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request or function() return {Body = nil} end
+local isfile = isfile or function() return false end
+local readfile = readfile or function() return "" end
+local writefile = writefile or function() end
+local queue_on_teleport = queue_on_teleport or function() end
+local setclipboard = setclipboard or function() end
+-- ==========================================
 
 local CoreGui = cloneref(game:GetService("CoreGui"))
 local Players = cloneref(game:GetService("Players"))
