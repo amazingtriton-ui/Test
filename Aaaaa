@@ -82,10 +82,6 @@ local function LoadConfig()
 end
 LoadConfig()
 
--- NEW: Ensure the script remembers blacklisted words
-if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
-for _, w in ipairs(Config.BlacklistedWords) do Blacklist[w] = true end
-
 
 local currentCPM = Config.CPM
 local isBlatant = Config.Blatant
@@ -114,6 +110,10 @@ local isMyTurnLogDetected = false
 local logRequiredLetters = ""
 local turnExpiryTime = 0
 local Blacklist = {}
+
+if not Config.BlacklistedWords then Config.BlacklistedWords = {} end
+for _, w in ipairs(Config.BlacklistedWords) do Blacklist[w] = true end
+
 local UsedWords = {}
 local RandomOrderCache = {}
 local RandomPriority = {}
