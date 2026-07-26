@@ -1,3 +1,5 @@
+local success, err = pcall(function()
+
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -3489,3 +3491,9 @@ inputConn = UserInputService.InputBegan:Connect(function(input)
     if unloaded then return end
     if input.KeyCode == TOGGLE_KEY then ScreenGui.Enabled = not ScreenGui.Enabled end
 end)
+
+end)
+if not success then
+    warn("REAL SCRIPT ERROR: " .. tostring(err))
+    print("REAL SCRIPT ERROR: " .. tostring(err))
+end
