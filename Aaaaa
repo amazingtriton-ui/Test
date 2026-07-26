@@ -1533,8 +1533,8 @@ ManageBlacklistBtn.Font = Enum.Font.GothamMedium
 ManageBlacklistBtn.TextSize = 11
 ManageBlacklistBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
 ManageBlacklistBtn.BackgroundColor3 = THEME.Background
-ManageBlacklistBtn.Size = UDim2.new(0, 130, 0, 24)
-ManageBlacklistBtn.Position = UDim2.new(0, 150, 0, 145) 
+ManageBlacklistBtn.Size = UDim2.new(0, 265, 0, 24) -- Made it wide
+ManageBlacklistBtn.Position = UDim2.new(0, 15, 0, 235) -- Moved it to a new row below Server Browser
 Instance.new("UICorner", ManageBlacklistBtn).CornerRadius = UDim.new(0, 4)
 
 local BlacklistFrame = Instance.new("Frame", ScreenGui)
