@@ -39,6 +39,10 @@ local function ColorToRGB(c)
     return string.format("%d,%d,%d", math.floor(c.R * 255), math.floor(c.G * 255), math.floor(c.B * 255))
 end
 
+local function Tween(obj, props, time)
+    TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
+end
+
 local ConfigFile = "WordHelper_Config.json"
 local Config = {
     CPM = 550,
@@ -470,9 +474,6 @@ local function getDistance(s1, s2)
     return matrix[#s1][#s2]
 end
 
-local function Tween(obj, props, time)
-    TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
-end
 
 local WordMemoryState = ""
 
