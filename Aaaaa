@@ -426,9 +426,10 @@ local HardLetterScores = {
     mb = 20, sd = 21, dz = 21, md = 21, os = 11, od = 8, vy = 21,
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
     sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 19, cw = 21,
-    lw = 20, yp = 21, jy = 21, nz = 21, dae = 20, aly = 20, pse = 20, epia = 48, ving = 19,
-    jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tsi = 20, ror = 20, gia = 20,
-    nz = 47, eep = 20, ngo = 20
+    lw = 21, yp = 21, jy = 21, dae = 20, aly = 20, pse = 20, epia = 48, ving = 20,
+    jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tsi = 20, ror = 20, gia = 20, eep = 20, ngo = 20,
+    adz = 20, ipa = 47, xing = 20, ning = 20, ary = 20, nys = 20, obia = 20, phae = 20, raph = 20, phyl = 20,
+    kry = 20, gada = 20, anoi = 20, kong = 20
 
 }
 
