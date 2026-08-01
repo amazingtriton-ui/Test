@@ -263,10 +263,9 @@ olarapexionalization = true,
 tingnewsolves = true,
 riniclippedthisx = true,
 rattledtoastclippedthisx = true,
-["timo -(justputtimothybro)"] = true,
+["timo-(justputtimothybro)"] = true,
 thelegendarywustjaeritex = true,
 hahaniteniteszx = true
-
 }
 
 local usefulEnglishWords = {
@@ -477,10 +476,59 @@ micropachycephalosauruses = true,
 pfp = true,
 laryngotracheobronchitises = true,
 laryngotracheobronchitides = true,
-["what-you-see-is-what-you-get"] = true
+["what-you-see-is-what-you-get"] = true,
+    btw = true,
+    chacha = true,
+    chachas = true,
+    olsen = true,
+    olsens = true,
+    olshausen = true,
+    btb = true,
+    btx = true,
+    btrfs = true,
+    ipatasertib = true,
+    ipragliflozin = true,
+    ipriflavone = true,
+    iproniazid = true,
+    iproniazide = true,
+    ipilimumab = true,
+    ipomoea = true,
+    ipomoean = true,
+    pkhat = true,
+    pkhalii = true,
+    wto = true,
+    wta = true,
+    wtb = true,
+    wts = true,
+    wtc = true,
+    wtp = true,
+    txakoli = true,
+    txoko = true,
+    txapela = true,
+    txerri = true,
+    txang = true,
+    txistuari = true,
+    ngohiong = true,
+    sms = true,
+    ktitor = true,
+    smth = true,
+    rgb = true,
+    ["kwakwaka'wakw"] = true,
+    ["tsilhqot'in"] = true,
+    gwyddbwyll = true,
+    houyhnhnm = true,
+    ["gwich'in"] = true,
+    ["nisga'a"] = true,
+    ["nuu-chah-nulth"] = true,
+    ggwp = true,
+    ionoregulation = true,
+    cooghneiorvlt = true,
+    akiskemikinik = true,
+    goniosynechialysis = true,
+    goniosynechialyses = true,
+    ngohiong = true,
+    ngohiongs = true
 }
-
-
 local function LoadList(fname)
     UpdateStatus("Parsing word list...", THEME.Warning)
     if isfile(fname) then
@@ -555,7 +603,7 @@ local HardLetterScores = {
     lw = 21, yp = 21, jy = 21, dae = 20, aly = 20, pse = 20, epia = 48, ving = 20,
     jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tsi = 20, ror = 20, gia = 20, eep = 20, ngo = 20,
     adz = 20, ipa = 47, xing = 20, ning = 20, ary = 20, nys = 20, obia = 20, phae = 20, raph = 20, phyl = 20,
-    kry = 20, gada = 20, anoi = 20, kong = 20, aque = 20, cats = 20, mbuk = 20, ung = 20, ugg = 20, ols = 23
+    kry = 20, gada = 20, anoi = 20, kong = 20, aque = 20, cats = 20, mbuk = 20, ung = 20, ugg = 20, ols = 23, elp = 23, iy = 47, rg = 21, cd = 21
 
 }
 
