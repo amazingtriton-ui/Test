@@ -819,8 +819,8 @@ local HARDCODED_WORDS = {
     "orthogeosyncline",
     "pulchritudinous",
     "quinquagintillion",
-    "quoddamodotative"
-    "quetzalcoatlus"
+    "quoddamodotative",
+    "quetzalcoatlus",
     "schistochilaappendiculata", 
     "septicemiccolibacillosis",
     "creeper",
@@ -829,12 +829,13 @@ local HARDCODED_WORDS = {
     "trinity",
     "ampersand",
     "authenticity", 
-    "compulsory" 
+    "compulsory",
     "hospital", 
     "hydrangea",
     "noctilucent", 
     "parenthesis"
 }
+
 -- Setup GUI
 Unpatchabomb.Name = "Unpatchabomb"
 local success = pcall(function() Unpatchabomb.Parent = CoreGui end)
