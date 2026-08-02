@@ -704,7 +704,7 @@ local HARDCODED_WORDS = {
     "indefatigable",
     "ingenious",
     "irascible",
-    "ishmus",
+    "isthmus",
     "isometropia",
     "kaleidoscope",
     "lachrymose",
@@ -833,7 +833,8 @@ local HARDCODED_WORDS = {
     "hospital", 
     "hydrangea",
     "noctilucent", 
-    "parenthesis"
+    "parenthesis",
+    "thymicstromallymphopoietin"
 }
 
 -- Setup GUI
