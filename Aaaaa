@@ -876,23 +876,39 @@ local function GetCurrentGameWord(providedFrame)
     local rawWord = detected:lower():gsub(" ", "")
     local cleanWord = rawWord:gsub("%.", ""):gsub("…", "")
     
-    -- If we detect truncation dots, stitch the new visible text onto our memory
+        -- If we detect truncation dots, stitch the new visible text onto our memory
     if rawWord:find("%.") or rawWord:find("…") then
         if #WordMemoryState > 0 then
             local overlapLen = 0
-            -- Find the exact overlap between the end of the memory and the start of the new text
-            for len = math.min(#cleanWord, #WordMemoryState), 1, -1 do
-                if WordMemoryState:sub(-len) == cleanWord:sub(1, len) then
-                    overlapLen = len
-                    break
+            local charsDropped = 0
+            local found = false
+
+            -- Check for overlap, allowing up to 15 deleted characters (to account for backspacing)
+            for drop = 0, math.min(15, #WordMemoryState) do
+                local testMem = WordMemoryState:sub(1, #WordMemoryState - drop)
+                for len = math.min(#cleanWord, #testMem), 1, -1 do
+                    if testMem:sub(-len) == cleanWord:sub(1, len) then
+                        overlapLen = len
+                        charsDropped = drop
+                        found = true
+                        break
+                    end
                 end
+                if found then break end
             end
-            WordMemoryState = WordMemoryState:sub(1, #WordMemoryState - overlapLen) .. cleanWord
+
+            if found then
+                local testMem = WordMemoryState:sub(1, #WordMemoryState - charsDropped)
+                WordMemoryState = testMem:sub(1, #testMem - overlapLen) .. cleanWord
+            else
+                -- Fallback if the memory is completely out of sync
+                WordMemoryState = cleanWord
+            end
         else
             WordMemoryState = cleanWord
         end
     else
-                -- No dots detected, which means this is a brand new word. Reset the memory!
+        -- No dots detected, which means this is a brand new word. Reset the memory!
         WordMemoryState = cleanWord
     end
     
