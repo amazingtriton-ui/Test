@@ -834,8 +834,35 @@ local HARDCODED_WORDS = {
     "hydrangea",
     "noctilucent", 
     "parenthesis",
-    "thymicstromallymphopoietin"
-}
+    "thymicstromallymphopoietin",
+    "acrocephalopolydactylousdysplasia",
+    "worcestershire",
+    "xylotypographic",
+    "thalassophobia",
+    "pusillanimous",
+    "psychopharmacotherapy",
+    "quasquicentennial",
+    "utilitarianism",
+    "trinitrotoluene",
+    "tintinnabulation",
+    "verisimilitude",
+    "quasiautobiographical",
+    "ethnopsychopharmacology",
+    "effervescent",
+    "prestidigitation",
+    "radioallergosorbent",
+    "hydrochlorofluorocarbon",
+    "quadomototative",
+    "susurration",
+    "transinstitutionalization",
+    "pseudoriemannian",
+    "perspicacious",
+    "psychotomimetic",
+    "portmanteau",
+    "quindecasyllabic",
+    "thermochromatography",
+    "pseudohyperaldosteronism"
+    }
 
 -- Setup GUI
 Unpatchabomb.Name = "Unpatchabomb"
