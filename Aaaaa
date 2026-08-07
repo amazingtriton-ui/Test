@@ -594,8 +594,8 @@ laryngotracheobronchitides = true,
     ezetimibes = true,
     qraqeb = true,
     qraqebs = true,
-    Ixabepilone = true,
-    Ixabepilones = true,
+    ixabepilone = true,
+    ixabepilones = true,
     ["yesterday-and-tomorrow"] = true,
     ["yesterday-and-tomorrows"] = true,
     ["yesterday-today-and-tomorrow"] = true,
@@ -708,7 +708,95 @@ laryngotracheobronchitides = true,
     bromochlorodifluoromethane = true,
     bromochlorodifluoromethanes = true,
     carbonmonoxyhaemoglobin = true,
-    ["acrylonitrile-butadiene-styrene"] = true
+    ["acrylonitrile-butadiene-styrene"] = true,
+    tysm = true,
+    olsalazine = true,
+    ["xes-as-a-service"] = true,
+    ["neo-paganism"] = true,
+    ["neo-paganisms"] = true,
+    ktitors = true,
+    ["s-boxes"] = true,
+    ["centuries-old"] = true,
+    ["l'chaim"] = true,
+    ["set-in"] = true,
+    ["he'dve"] = true,
+    ["ill-bred"] = true,
+    phonk = true,
+    phonks = true,
+    wdym = true,
+    bbq = true,
+    pfps = true,
+    dawg = true,
+    dawgs = true,
+    dmitrevsk = true,
+    dmitri = true,
+    dmitriev = true,
+    dmitrov = true,
+    dmitrovka = true,
+    dmytrivka = true,
+    mbukushu = true,
+    eoabelisauruses = true,
+    szechuanosauruses = true,
+    ["open-endednesses"] = true,
+    ["open-endedness"] = true,
+    ["open-endes"] = true,
+    ["ukay-ukay"] = true,
+    ["alto-relivos"] = true,
+    ["alto-relivo"] = true,
+    ["model-view-models"] = true,
+    ["model-view-model"] = true,
+    yakas = true,
+    ["anti-tax"] = true,
+    ["knowledge-as-a-service"] = true,
+    ["jack-o-lantern"] = true,
+    ["business-to-governments"] = true,
+    ["business-to-government"] = true,
+    ["jam-packet"] = true,
+    ["ondeh-ondeh"] = true,
+    ["double-check"] = true,
+    ["mi'kmaq"] = true,
+    ["last-minute"] = true,
+    endothelialization = true,
+    endothelializations = true,
+    Reendothelialization = true,
+    Reendothelializations = true,
+    conjunctivodacryocystorhinostomies = true,
+    conjunctivodacryocystorhinostomy = true,
+    ["a-cock-bill"] = true,
+    ["d'ansite"] = true,
+    ["fa'afafine"] = true,
+    ["fo'c'sles"] = true,
+    ["good-king-henries"] = true,
+    ["haak-en-steeks"] = true,
+    ["he-he'd"] = true,
+    ["he'd've"] = true,
+    ["i'd've"] = true,
+    ["j'adoube"] = true,
+    ["k'iche'"] = true,
+    ["ma'ariv"] = true,
+    ["ne'er-do-weels"] = true,
+    ["o-be-joyfuls"] = true,
+    ["o-o-aas"] = true,
+    ["o'nyong-nyong"] = true,
+    ["p-chloro-m-cresol"] = true,
+    ["pa'angas"] = true,
+    ["q'eqchi'"] = true,
+    ["s-adenosyl-l-homocysteine"] = true,
+    ["s'mores"] = true,
+    ["va-va-va-voom"] = true,
+    ["x-as-a-service"] = true,
+    ["xiao-chai-hu-tang"] = true,
+    ["xiao'erjing"] = true,
+    ["y'all's"] = true,
+    ["ooh-la-la"] = true,
+    ["k'iche'"] = true,
+    ["e'en"] = true,
+    ["bakati'"] = true,
+    ["ch'orti'"] = true,
+    ["q'eqchi'"] = true,
+    ["i'd"] = true,
+    ["i'd've"] = true,
+    ptsd = true
 }
 local function LoadList(fname)
     UpdateStatus("Parsing word list...", THEME.Warning)
@@ -721,15 +809,15 @@ local function LoadList(fname)
                 table.insert(Words, clean)
             end
         end
-        UpdateStatus("Loaded " .. #Words .. " words!", THEME.Success)
     else
          UpdateStatus("No word list found!", Color3.fromRGB(255, 80, 80))
+         task.wait(1)
     end
-    task.wait(1)
 end
 
 LoadList(fileName)
 
+-- 1. Add useful English words
 for word in pairs(usefulEnglishWords) do
     if not SeenWords[word] then
         SeenWords[word] = true
@@ -737,6 +825,22 @@ for word in pairs(usefulEnglishWords) do
     end
 end
 
+-- 2. Add custom words from config BEFORE calculating the total
+if Config.CustomWords then
+    for _, w in ipairs(Config.CustomWords) do
+        local clean = w:gsub("[%s%c]+", ""):lower()
+        if #clean > 0 and not SeenWords[clean] then
+            SeenWords[clean] = true
+            table.insert(Words, clean)
+        end
+    end
+end
+
+-- 3. Now update the UI with the TRUE total count
+UpdateStatus("Loaded " .. #Words .. " words!", THEME.Success)
+task.wait(1)
+
+-- 4. Destroy GUI and handle bucketing efficiently
 if LoadingGui then LoadingGui:Destroy() end
 
 table.sort(Words)
@@ -746,20 +850,6 @@ for _, w in ipairs(Words) do
     if c == "" then c = "#" end
     Buckets[c] = Buckets[c] or {}
     table.insert(Buckets[c], w)
-end
-
-if Config.CustomWords then
-    for _, w in ipairs(Config.CustomWords) do
-        local clean = w:gsub("[%s%c]+", ""):lower()
-        if #clean > 0 and not SeenWords[clean] then
-            SeenWords[clean] = true
-            table.insert(Words, clean)
-            local c = clean:sub(1,1) or ""
-            if c == "" then c = "#" end
-            Buckets[c] = Buckets[c] or {}
-            table.insert(Buckets[c], clean)
-        end
-    end
 end
 
 -- Clear memory
