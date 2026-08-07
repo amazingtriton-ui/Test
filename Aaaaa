@@ -1875,9 +1875,10 @@ CWAddBtn.Size = UDim2.new(0, 50, 0, 24)
 CWAddBtn.Position = UDim2.new(1, -60, 1, -35)
 Instance.new("UICorner", CWAddBtn).CornerRadius = UDim.new(0, 4)
 
+
 local function RefreshCustomWords()
     for _, c in ipairs(CWScroll:GetChildren()) do
-        if c:IsA("Frame") then c:Destroy() end
+        if c:IsA("GuiObject") and not c:IsA("UIListLayout") then c:Destroy() end
     end
     
     local queryRaw = CWSearchBox.Text
@@ -1886,7 +1887,7 @@ local function RefreshCustomWords()
     local list = Config.CustomWords or {}
     local shownCount = 0
     
-    for i, w in ipairs(list) do
+    for _, w in ipairs(list) do
         if query == "" or w:find(query, 1, true) then
             shownCount = shownCount + 1
             local row = Instance.new("TextButton", CWScroll)
@@ -1915,8 +1916,6 @@ local function RefreshCustomWords()
             lbl.BackgroundTransparency = 1
             lbl.TextXAlignment = Enum.TextXAlignment.Left
 
-            -- Removed nested invisible button to fix click handling
-            
             local del = Instance.new("TextButton", row)
             del.Text = "X"
             del.Font = Enum.Font.GothamBold
@@ -1927,9 +1926,13 @@ local function RefreshCustomWords()
             del.BackgroundTransparency = 1
             
             del.MouseButton1Click:Connect(function()
-                table.remove(Config.CustomWords, i)
+                for idx, savedWord in ipairs(Config.CustomWords) do
+                    if savedWord == w then
+                        table.remove(Config.CustomWords, idx)
+                        break
+                    end
+                end
                 SaveConfig()
-                Blacklist[w] = true
                 RefreshCustomWords()
                 ShowToast("Removed: " .. w, "warning")
             end)
@@ -1937,6 +1940,7 @@ local function RefreshCustomWords()
     end
     CWScroll.CanvasSize = UDim2.new(0, 0, 0, shownCount * 24)
 end
+
 
 CWSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshCustomWords)
 
@@ -1964,24 +1968,37 @@ CWAddBtn.MouseButton1Click:Connect(function()
         end
     end
     
-    if existsInMain then
+    if existsInMain and not Blacklist[text] then
          ShowToast("Word already in main dictionary!", "error")
          return
+    end
+
+    if Blacklist[text] then
+        Blacklist[text] = nil
+        for idx, bw in ipairs(Config.BlacklistedWords) do
+            if bw == text then
+                table.remove(Config.BlacklistedWords, idx)
+                break
+            end
+        end
     end
 
     table.insert(Config.CustomWords, text)
     SaveConfig()
     
-    table.insert(Words, text)
-    if c == "" then c = "#" end
-    Buckets[c] = Buckets[c] or {}
-    table.insert(Buckets[c], text)
+    if not existsInMain then
+        table.insert(Words, text)
+        if c == "" then c = "#" end
+        Buckets[c] = Buckets[c] or {}
+        table.insert(Buckets[c], text)
+    end
     
     CWAddBox.Text = ""
     CWAddBox:ReleaseFocus()
     RefreshCustomWords()
     ShowToast("Added custom word: " .. text, "success")
 end)
+
 
 RefreshCustomWords()
 
