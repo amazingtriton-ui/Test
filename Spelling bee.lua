@@ -15,6 +15,9 @@ local ReloadBtn = Instance.new("TextButton")
 
 local SuggestionList = Instance.new("ScrollingFrame")
 local ListLayout = Instance.new("UIListLayout")
+local PlusBtn = Instance.new("TextButton")
+local MinusBtn = Instance.new("TextButton")
+local GuiScale = Instance.new("UIScale")
 
 -- Hardcoded Dictionary
 local HARDCODED_WORDS = {
@@ -997,6 +1000,31 @@ SuggestionList.ScrollBarThickness = 4
 ListLayout.Parent = SuggestionList
 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ListLayout.Padding = UDim.new(0, 2)
+-- Setup GUI Scaling
+GuiScale.Parent = UnpatchabombFrame
+GuiScale.Scale = 1.0
+
+MinusBtn.Name = "MinusBtn"
+MinusBtn.Parent = TopFrame
+MinusBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+MinusBtn.BorderSizePixel = 0
+MinusBtn.Position = UDim2.new(1, -56, 0, 0)
+MinusBtn.Size = UDim2.new(0, 28, 0, 28)
+MinusBtn.Font = Enum.Font.GothamBold
+MinusBtn.Text = "-"
+MinusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinusBtn.TextSize = 18
+
+PlusBtn.Name = "PlusBtn"
+PlusBtn.Parent = TopFrame
+PlusBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+PlusBtn.BorderSizePixel = 0
+PlusBtn.Position = UDim2.new(1, -28, 0, 0)
+PlusBtn.Size = UDim2.new(0, 28, 0, 28)
+PlusBtn.Font = Enum.Font.GothamBold
+PlusBtn.Text = "+"
+PlusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+PlusBtn.TextSize = 18
 
 -- Make GUI Draggable
 local dragging, dragInput, dragStart, startPos
@@ -1023,6 +1051,27 @@ UserInputService.InputEnded:Connect(function(input)
         dragging = false
     end
 end)
+
+-- Size Modification Logic
+local currentScale = 1.0
+local MAX_SCALE = 4.0
+local MIN_SCALE = 0.25
+local SCALE_STEP = 0.25
+
+PlusBtn.MouseButton1Click:Connect(function()
+    if currentScale < MAX_SCALE then
+        currentScale = math.min(MAX_SCALE, currentScale + SCALE_STEP)
+        GuiScale.Scale = currentScale
+    end
+end)
+
+MinusBtn.MouseButton1Click:Connect(function()
+    if currentScale > MIN_SCALE then
+        currentScale = math.max(MIN_SCALE, currentScale - SCALE_STEP)
+        GuiScale.Scale = currentScale
+    end
+end)
+
 
 local IDA_alreadyUsed = {}
 local autoGetEnabled = false
