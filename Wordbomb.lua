@@ -257,8 +257,7 @@ local function ReloadDictionary()
 
         task.spawn(function()
         local urls = {
-            "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt",
-            "https://pastebin.com/raw/56DpFAqP"
+            "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt"
         }
 
         local loadedCount = 0
