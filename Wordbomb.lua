@@ -246,21 +246,33 @@ local function ReloadDictionary()
         end
     end
 
-    task.spawn(function()
-        local fetchSuccess, result = pcall(function()
-            return game:HttpGetAsync("https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt")
-        end)
+        task.spawn(function()
+        local urls = {
+            "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt",
+            "https://pastebin.com/raw/56DpFAqP"
+        }
 
-        if fetchSuccess and result then
-            for word in string.gmatch(result, "[^\r\n]+") do
-                if #word >= 3 then
-                    local cleanWord = string.lower(word)
-                    if not uselessMap[cleanWord] then
-                        table.insert(WORDS, cleanWord)
+        local loadedCount = 0
+        
+        for _, url in ipairs(urls) do
+            local fetchSuccess, result = pcall(function()
+                return game:HttpGetAsync(url)
+            end)
+
+            if fetchSuccess and result then
+                for word in string.gmatch(result, "[^\r\n]+") do
+                    if #word >= 3 then
+                        local cleanWord = string.lower(word)
+                        if not uselessMap[cleanWord] then
+                            table.insert(WORDS, cleanWord)
+                            loadedCount = loadedCount + 1
+                        end
                     end
                 end
             end
-            
+        end
+        
+        if loadedCount > 0 then
             -- Re-inject whitelisted words upon reload
             for w, _ in pairs(CustomWhitelist) do
                 if not table.find(WORDS, w) then
@@ -271,10 +283,10 @@ local function ReloadDictionary()
             WordText.Text = "Loaded " .. #WORDS .. " words."
             if lastQuery ~= "" then updateSuggestions(lastQuery) end
         else
-            WordText.Text = "Failed to load dictionary."
+            WordText.Text = "Failed to load dictionaries."
         end
     end)
-end
+
 
 DelayBox.FocusLost:Connect(function()
     local newDelay = tonumber(DelayBox.Text)
@@ -318,8 +330,8 @@ local function CreateListMenu(titleText)
     CloseBtn.BorderSizePixel = 0
     CloseBtn.ZIndex = 11
     
-    local InputBox = Instance.new("TextBox", Menu)
-    InputBox.Size = UDim2.new(0.7, 0, 0.1, 0)
+        local InputBox = Instance.new("TextBox", Menu)
+    InputBox.Size = UDim2.new(0.5, 0, 0.1, 0)
     InputBox.Position = UDim2.new(0.05, 0, 0.18, 0)
     InputBox.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
     InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -332,7 +344,7 @@ local function CreateListMenu(titleText)
     
     local AddBtn = Instance.new("TextButton", Menu)
     AddBtn.Size = UDim2.new(0.2, 0, 0.1, 0)
-    AddBtn.Position = UDim2.new(0.75, 0, 0.18, 0)
+    AddBtn.Position = UDim2.new(0.55, 0, 0.18, 0)
     AddBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
     AddBtn.Text = "ADD"
     AddBtn.Font = Enum.Font.GothamBold
@@ -340,6 +352,18 @@ local function CreateListMenu(titleText)
     AddBtn.TextSize = 12
     AddBtn.BorderSizePixel = 0
     AddBtn.ZIndex = 11
+
+    local CopyBtn = Instance.new("TextButton", Menu)
+    CopyBtn.Size = UDim2.new(0.2, 0, 0.1, 0)
+    CopyBtn.Position = UDim2.new(0.75, 0, 0.18, 0)
+    CopyBtn.BackgroundColor3 = Color3.fromRGB(50, 100, 200)
+    CopyBtn.Text = "COPY"
+    CopyBtn.Font = Enum.Font.GothamBold
+    CopyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CopyBtn.TextSize = 12
+    CopyBtn.BorderSizePixel = 0
+    CopyBtn.ZIndex = 11
+
     
     local ScrollList = Instance.new("ScrollingFrame", Menu)
     ScrollList.Size = UDim2.new(0.9, 0, 0.65, 0)
@@ -356,11 +380,11 @@ local function CreateListMenu(titleText)
         Menu.Visible = false
     end)
     
-    return Menu, InputBox, AddBtn, ScrollList
+        return Menu, InputBox, AddBtn, CopyBtn, ScrollList
 end
 
-local WLMenu, WLInput, WLAdd, WLList = CreateListMenu("WHITELIST")
-local BLMenu, BLInput, BLAdd, BLList = CreateListMenu("BLACKLIST")
+local WLMenu, WLInput, WLAdd, WLCopy, WLList = CreateListMenu("WHITELIST")
+local BLMenu, BLInput, BLAdd, BLCopy, BLList = CreateListMenu("BLACKLIST")
 
 local function UpdateMenuVisuals(listUI, mapData, isWhitelist)
     for _, c in ipairs(listUI:GetChildren()) do
@@ -428,6 +452,28 @@ BlacklistBtn.MouseButton1Click:Connect(function()
     WLMenu.Visible = false
     UpdateMenuVisuals(BLList, CustomBlacklist, false)
 end)
+
+-- Copy Logic
+WLCopy.MouseButton1Click:Connect(function()
+    local wlWords = {}
+    for w, _ in pairs(CustomWhitelist) do table.insert(wlWords, w) end
+    if setclipboard then
+        setclipboard(table.concat(wlWords, "\n"))
+        WLCopy.Text = "COPIED!"
+        task.delay(1, function() WLCopy.Text = "COPY" end)
+    end
+end)
+
+BLCopy.MouseButton1Click:Connect(function()
+    local blWords = {}
+    for w, _ in pairs(CustomBlacklist) do table.insert(blWords, w) end
+    if setclipboard then
+        setclipboard(table.concat(blWords, "\n"))
+        BLCopy.Text = "COPIED!"
+        task.delay(1, function() BLCopy.Text = "COPY" end)
+    end
+end)
+
 
 -- Add Logic
 WLAdd.MouseButton1Click:Connect(function()
