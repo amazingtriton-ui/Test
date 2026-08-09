@@ -20,7 +20,7 @@ local ReloadBtn = Instance.new("TextButton")
 local SuggestionList = Instance.new("ScrollingFrame")
 local ListLayout = Instance.new("UIListLayout")
 
--- NEW: Whitelist & Blacklist Buttons
+-- New Buttons
 local WhitelistBtn = Instance.new("TextButton")
 local BlacklistBtn = Instance.new("TextButton")
 
@@ -146,34 +146,32 @@ SuggestionList.Parent = MainFrame
 SuggestionList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 SuggestionList.BorderSizePixel = 0
 SuggestionList.Position = UDim2.new(0.02, 0, 0.51, 0)
-SuggestionList.Size = UDim2.new(0.96, 0, 0.36, 0) -- Adjusted height to fit buttons
+SuggestionList.Size = UDim2.new(0.96, 0, 0.35, 0)
 SuggestionList.ScrollBarThickness = 4
 
 ListLayout.Parent = SuggestionList
 ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ListLayout.Padding = UDim.new(0, 2)
 
--- Configured Whitelist Button
 WhitelistBtn.Name = "WhitelistBtn"
 WhitelistBtn.Parent = MainFrame
 WhitelistBtn.BackgroundColor3 = Color3.fromRGB(35, 45, 35)
-WhitelistBtn.Position = UDim2.new(0.02, 0, 0.89, 0)
-WhitelistBtn.Size = UDim2.new(0.47, 0, 0.09, 0)
+WhitelistBtn.Position = UDim2.new(0.02, 0, 0.88, 0)
+WhitelistBtn.Size = UDim2.new(0.47, 0, 0.1, 0)
 WhitelistBtn.Font = Enum.Font.GothamBold
-WhitelistBtn.Text = "ADD WHITELIST"
+WhitelistBtn.Text = "WHITELIST"
 WhitelistBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
-WhitelistBtn.TextSize = 11.000
+WhitelistBtn.TextSize = 12.000
 
--- Configured Blacklist Button
 BlacklistBtn.Name = "BlacklistBtn"
 BlacklistBtn.Parent = MainFrame
 BlacklistBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
-BlacklistBtn.Position = UDim2.new(0.51, 0, 0.89, 0)
-BlacklistBtn.Size = UDim2.new(0.47, 0, 0.09, 0)
+BlacklistBtn.Position = UDim2.new(0.51, 0, 0.88, 0)
+BlacklistBtn.Size = UDim2.new(0.47, 0, 0.1, 0)
 BlacklistBtn.Font = Enum.Font.GothamBold
-BlacklistBtn.Text = "ADD BLACKLIST"
+BlacklistBtn.Text = "BLACKLIST"
 BlacklistBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
-BlacklistBtn.TextSize = 11.000
+BlacklistBtn.TextSize = 12.000
 
 -- Make GUI Draggable
 local dragging, dragInput, dragStart, startPos
@@ -205,18 +203,36 @@ local WORDS = {}
 local IDA_alreadyUsed = {}
 local autoGetEnabled = false
 local currentTypeDelay = 0.035 
-local Whitelist = {}
-local Blacklist = {}
+local lastQuery = ""
 
-DelayBox.FocusLost:Connect(function()
-    local newDelay = tonumber(DelayBox.Text)
-    if newDelay then
-        currentTypeDelay = newDelay
-        DelayBox.Text = tostring(newDelay)
-    else
-        DelayBox.Text = tostring(currentTypeDelay)
+-- Whitelist and Blacklist Maps & Saving Logic
+local CustomWhitelist = {}
+local CustomBlacklist = {}
+
+local function SaveData()
+    if writefile then
+        pcall(function()
+            writefile("Unpatchabomb_Whitelist.json", HttpService:JSONEncode(CustomWhitelist))
+            writefile("Unpatchabomb_Blacklist.json", HttpService:JSONEncode(CustomBlacklist))
+        end)
     end
-end)
+end
+
+local function LoadData()
+    if readfile then
+        pcall(function()
+            local wlData = readfile("Unpatchabomb_Whitelist.json")
+            if wlData then CustomWhitelist = HttpService:JSONDecode(wlData) end
+        end)
+        pcall(function()
+            local blData = readfile("Unpatchabomb_Blacklist.json")
+            if blData then CustomBlacklist = HttpService:JSONDecode(blData) end
+        end)
+    end
+end
+
+-- Load previously saved data on start
+LoadData()
 
 local uselessMap = {}
 local function ReloadDictionary()
@@ -244,14 +260,201 @@ local function ReloadDictionary()
                     end
                 end
             end
+            
+            -- Re-inject whitelisted words upon reload
+            for w, _ in pairs(CustomWhitelist) do
+                if not table.find(WORDS, w) then
+                    table.insert(WORDS, w)
+                end
+            end
+            
             WordText.Text = "Loaded " .. #WORDS .. " words."
+            if lastQuery ~= "" then updateSuggestions(lastQuery) end
         else
             WordText.Text = "Failed to load dictionary."
         end
     end)
 end
 
+DelayBox.FocusLost:Connect(function()
+    local newDelay = tonumber(DelayBox.Text)
+    if newDelay then
+        currentTypeDelay = newDelay
+        DelayBox.Text = tostring(newDelay)
+    else
+        DelayBox.Text = tostring(currentTypeDelay)
+    end
+end)
+
 ReloadBtn.MouseButton1Click:Connect(ReloadDictionary)
+
+-- Menus Logic for Whitelist/Blacklist
+local function CreateListMenu(titleText)
+    local Menu = Instance.new("Frame")
+    Menu.Name = titleText.."Menu"
+    Menu.Parent = MainFrame
+    Menu.Size = UDim2.new(1, 0, 1, 0)
+    Menu.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Menu.ZIndex = 10
+    Menu.Visible = false
+    
+    local Title = Instance.new("TextLabel", Menu)
+    Title.Size = UDim2.new(0.8, 0, 0.15, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = titleText .. " MENU"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 14
+    Title.ZIndex = 11
+    
+    local CloseBtn = Instance.new("TextButton", Menu)
+    CloseBtn.Size = UDim2.new(0.2, 0, 0.15, 0)
+    CloseBtn.Position = UDim2.new(0.8, 0, 0, 0)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    CloseBtn.Text = "CLOSE"
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseBtn.TextSize = 12
+    CloseBtn.BorderSizePixel = 0
+    CloseBtn.ZIndex = 11
+    
+    local InputBox = Instance.new("TextBox", Menu)
+    InputBox.Size = UDim2.new(0.7, 0, 0.1, 0)
+    InputBox.Position = UDim2.new(0.05, 0, 0.18, 0)
+    InputBox.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InputBox.PlaceholderText = "Type word here..."
+    InputBox.Font = Enum.Font.Gotham
+    InputBox.TextSize = 12
+    InputBox.BorderSizePixel = 0
+    InputBox.ZIndex = 11
+    InputBox.ClearTextOnFocus = false
+    
+    local AddBtn = Instance.new("TextButton", Menu)
+    AddBtn.Size = UDim2.new(0.2, 0, 0.1, 0)
+    AddBtn.Position = UDim2.new(0.75, 0, 0.18, 0)
+    AddBtn.BackgroundColor3 = Color3.fromRGB(50, 150, 50)
+    AddBtn.Text = "ADD"
+    AddBtn.Font = Enum.Font.GothamBold
+    AddBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AddBtn.TextSize = 12
+    AddBtn.BorderSizePixel = 0
+    AddBtn.ZIndex = 11
+    
+    local ScrollList = Instance.new("ScrollingFrame", Menu)
+    ScrollList.Size = UDim2.new(0.9, 0, 0.65, 0)
+    ScrollList.Position = UDim2.new(0.05, 0, 0.32, 0)
+    ScrollList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    ScrollList.BorderSizePixel = 0
+    ScrollList.ScrollBarThickness = 4
+    ScrollList.ZIndex = 11
+    
+    local Layout = Instance.new("UIListLayout", ScrollList)
+    Layout.Padding = UDim.new(0, 2)
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        Menu.Visible = false
+    end)
+    
+    return Menu, InputBox, AddBtn, ScrollList
+end
+
+local WLMenu, WLInput, WLAdd, WLList = CreateListMenu("WHITELIST")
+local BLMenu, BLInput, BLAdd, BLList = CreateListMenu("BLACKLIST")
+
+local function UpdateMenuVisuals(listUI, mapData, isWhitelist)
+    for _, c in ipairs(listUI:GetChildren()) do
+        if not c:IsA("UIListLayout") then c:Destroy() end
+    end
+    
+    local ySize = 0
+    for w, _ in pairs(mapData) do
+        local Item = Instance.new("Frame", listUI)
+        Item.Size = UDim2.new(1, 0, 0, 25)
+        Item.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        Item.BorderSizePixel = 0
+        Item.ZIndex = 12
+        
+        local Lbl = Instance.new("TextLabel", Item)
+        Lbl.Size = UDim2.new(0.8, 0, 1, 0)
+        Lbl.BackgroundTransparency = 1
+        Lbl.Text = " " .. string.upper(w)
+        Lbl.Font = Enum.Font.Gotham
+        Lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Lbl.TextSize = 12
+        Lbl.TextXAlignment = Enum.TextXAlignment.Left
+        Lbl.ZIndex = 12
+        
+        local DelBtn = Instance.new("TextButton", Item)
+        DelBtn.Size = UDim2.new(0.2, 0, 1, 0)
+        DelBtn.Position = UDim2.new(0.8, 0, 0, 0)
+        DelBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+        DelBtn.Text = "X"
+        DelBtn.Font = Enum.Font.GothamBold
+        DelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        DelBtn.TextSize = 12
+        DelBtn.BorderSizePixel = 0
+        DelBtn.ZIndex = 12
+        
+        DelBtn.MouseButton1Click:Connect(function()
+            mapData[w] = nil
+            if isWhitelist then
+                local idx = table.find(WORDS, w)
+                if idx then table.remove(WORDS, idx) end
+            end
+            SaveData() -- Save after removal
+            UpdateMenuVisuals(listUI, mapData, isWhitelist)
+            if lastQuery ~= "" then updateSuggestions(lastQuery) end
+        end)
+        
+        ySize = ySize + 27
+    end
+    listUI.CanvasSize = UDim2.new(0, 0, 0, ySize)
+end
+
+-- Populate initial lists if data was loaded
+UpdateMenuVisuals(WLList, CustomWhitelist, true)
+UpdateMenuVisuals(BLList, CustomBlacklist, false)
+
+-- Open Menus
+WhitelistBtn.MouseButton1Click:Connect(function()
+    WLMenu.Visible = true
+    BLMenu.Visible = false
+    UpdateMenuVisuals(WLList, CustomWhitelist, true)
+end)
+
+BlacklistBtn.MouseButton1Click:Connect(function()
+    BLMenu.Visible = true
+    WLMenu.Visible = false
+    UpdateMenuVisuals(BLList, CustomBlacklist, false)
+end)
+
+-- Add Logic
+WLAdd.MouseButton1Click:Connect(function()
+    local w = string.lower(string.gsub(WLInput.Text, "%s+", ""))
+    if w ~= "" and not CustomWhitelist[w] then
+        CustomWhitelist[w] = true
+        if not table.find(WORDS, w) then
+            table.insert(WORDS, w)
+        end
+        SaveData() -- Save after addition
+        WLInput.Text = ""
+        UpdateMenuVisuals(WLList, CustomWhitelist, true)
+        if lastQuery ~= "" then updateSuggestions(lastQuery) end
+    end
+end)
+
+BLAdd.MouseButton1Click:Connect(function()
+    local w = string.lower(string.gsub(BLInput.Text, "%s+", ""))
+    if w ~= "" and not CustomBlacklist[w] then
+        CustomBlacklist[w] = true
+        SaveData() -- Save after addition
+        BLInput.Text = ""
+        UpdateMenuVisuals(BLList, CustomBlacklist, false)
+        if lastQuery ~= "" then updateSuggestions(lastQuery) end
+    end
+end)
+
 ReloadDictionary()
 
 local SpecialKeys = {
@@ -303,7 +506,6 @@ end
 
 local categories = {"LONG", "SHORT", "RANDOM"}
 local currentCatIndex = 1
-local lastQuery = ""
 
 CategoryBtn.MouseButton1Click:Connect(function()
     currentCatIndex = currentCatIndex + 1
@@ -331,26 +533,6 @@ local function IDA_tableItemExists(array, val)
     return false
 end
 
--- Whitelist / Blacklist Logics
-WhitelistBtn.MouseButton1Click:Connect(function()
-    local word = string.lower(string.gsub(LetterBox.Text, "%s+", ""))
-    if word ~= "" and not IDA_tableItemExists(Whitelist, word) then
-        table.insert(Whitelist, word)
-        WordText.Text = "Whitelisted: " .. word
-        if lastQuery ~= "" then updateSuggestions(lastQuery) end
-    end
-end)
-
-BlacklistBtn.MouseButton1Click:Connect(function()
-    local word = string.lower(string.gsub(LetterBox.Text, "%s+", ""))
-    if word ~= "" and not IDA_tableItemExists(Blacklist, word) then
-        table.insert(Blacklist, word)
-        WordText.Text = "Blacklisted: " .. word
-        if lastQuery ~= "" then updateSuggestions(lastQuery) end
-    end
-end)
-
-
 function updateSuggestions(query)
     query = string.lower(query)
     lastQuery = query
@@ -370,42 +552,25 @@ function updateSuggestions(query)
 
     local matches = {}
     for _, w in ipairs(WORDS) do
-        -- Skip if used OR if blacklisted
-        if string.find(w, query, 1, true) and not IDA_tableItemExists(IDA_alreadyUsed, w) and not IDA_tableItemExists(Blacklist, w) then
-            table.insert(matches, w)
+        -- Skip if word is in Blacklist!
+        if not CustomBlacklist[w] then
+            if string.find(w, query, 1, true) and not IDA_tableItemExists(IDA_alreadyUsed, w) then
+                table.insert(matches, w)
+            end
         end
     end
 
     local mode = categories[currentCatIndex]
     
-    -- Sorting mixed with Whitelist Prioritization
-    if mode == "RANDOM" then
+    if mode == "LONG" then
+        table.sort(matches, function(a, b) return #a > #b end)
+    elseif mode == "SHORT" then
+        table.sort(matches, function(a, b) return #a < #b end)
+    elseif mode == "RANDOM" then
         for i = #matches, 2, -1 do
             local j = math.random(i)
             matches[i], matches[j] = matches[j], matches[i]
         end
-        -- Move whitelisted items to top, preserving random layout for the rest
-        table.sort(matches, function(a, b)
-            local aWhite = IDA_tableItemExists(Whitelist, a)
-            local bWhite = IDA_tableItemExists(Whitelist, b)
-            if aWhite and not bWhite then return true end
-            if bWhite and not aWhite then return false end
-            return false 
-        end)
-    else
-        table.sort(matches, function(a, b)
-            local aWhite = IDA_tableItemExists(Whitelist, a)
-            local bWhite = IDA_tableItemExists(Whitelist, b)
-            
-            if aWhite and not bWhite then return true end
-            if bWhite and not aWhite then return false end
-            
-            if mode == "LONG" then
-                return #a > #b
-            elseif mode == "SHORT" then
-                return #a < #b
-            end
-        end)
     end
 
     local ySize = 0
@@ -422,20 +587,13 @@ function updateSuggestions(query)
         local word = matches[i]
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 25)
-        
-        -- Color coding: Mark whitelisted words visibly
-        if IDA_tableItemExists(Whitelist, word) then
-            btn.BackgroundColor3 = Color3.fromRGB(30, 80, 30)
-        else
-            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-        end
-        
+        btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         btn.Text = string.upper(word) .. " (" .. #word .. ")"
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
         btn.Font = Enum.Font.Gotham
         btn.TextSize = 12
         btn.Parent = SuggestionList
-        
+
         btn.MouseButton1Click:Connect(function()
             btn.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
             btn.Text = "TYPING..."
@@ -508,4 +666,3 @@ task.spawn(function()
         end
     end
 end)
-
