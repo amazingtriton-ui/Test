@@ -27,9 +27,19 @@ local BlacklistBtn = Instance.new("TextButton")
 -- Setup GUI
 Unpatchabomb.Name = "Unpatchabomb"
 local success = pcall(function() Unpatchabomb.Parent = CoreGui end)
-if not success then Unpatchabomb.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+if not success then 
+    local player = Players.LocalPlayer
+    if not player then
+        Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+        player = Players.LocalPlayer
+    end
+    Unpatchabomb.Parent = player:WaitForChild("PlayerGui") 
+end
+
 Unpatchabomb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Unpatchabomb.ResetOnSpawn = false
+
 
 UnpatchabombFrame.Name = "UnpatchabombFrame"
 UnpatchabombFrame.Parent = Unpatchabomb
@@ -222,16 +232,15 @@ local function LoadData()
     if readfile then
         pcall(function()
             local wlData = readfile("Unpatchabomb_Whitelist.json")
-            if wlData then CustomWhitelist = HttpService:JSONDecode(wlData) end
+            if wlData then CustomWhitelist = HttpService:JSONDecode(wlData) or {} end
         end)
         pcall(function()
             local blData = readfile("Unpatchabomb_Blacklist.json")
-            if blData then CustomBlacklist = HttpService:JSONDecode(blData) end
+            if blData then CustomBlacklist = HttpService:JSONDecode(blData) or {} end
         end)
     end
 end
 
--- Load previously saved data on start
 LoadData()
 
 local uselessMap = {}
