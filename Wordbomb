@@ -1,0 +1,511 @@
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Players = game:GetService("Players")
+
+local Unpatchabomb = Instance.new("ScreenGui")
+local UnpatchabombFrame = Instance.new("Frame")
+local MainFrame = Instance.new("Frame")
+local LetterBox = Instance.new("TextBox")
+local AutoBtn = Instance.new("TextButton")
+local DelayBox = Instance.new("TextBox")
+local WordText = Instance.new("TextLabel")
+local TopFrame = Instance.new("Frame")
+local T1 = Instance.new("TextLabel")
+local T2 = Instance.new("TextLabel")
+
+local CategoryBtn = Instance.new("TextButton")
+local ReloadBtn = Instance.new("TextButton")
+local SuggestionList = Instance.new("ScrollingFrame")
+local ListLayout = Instance.new("UIListLayout")
+
+-- NEW: Whitelist & Blacklist Buttons
+local WhitelistBtn = Instance.new("TextButton")
+local BlacklistBtn = Instance.new("TextButton")
+
+-- Setup GUI
+Unpatchabomb.Name = "Unpatchabomb"
+local success = pcall(function() Unpatchabomb.Parent = CoreGui end)
+if not success then Unpatchabomb.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+Unpatchabomb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Unpatchabomb.ResetOnSpawn = false
+
+UnpatchabombFrame.Name = "UnpatchabombFrame"
+UnpatchabombFrame.Parent = Unpatchabomb
+UnpatchabombFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+UnpatchabombFrame.BackgroundTransparency = 1.000
+UnpatchabombFrame.BorderSizePixel = 0
+UnpatchabombFrame.Position = UDim2.new(0, 100, 0, 100)
+UnpatchabombFrame.Size = UDim2.new(0, 305, 0, 350)
+
+TopFrame.Name = "TopFrame"
+TopFrame.Parent = UnpatchabombFrame
+TopFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+TopFrame.BorderSizePixel = 0
+TopFrame.Size = UDim2.new(1, 0, 0, 28)
+
+T1.Name = "T1"
+T1.Parent = TopFrame
+T1.BackgroundTransparency = 1.000
+T1.Position = UDim2.new(0.01, 0, 0, 0)
+T1.Size = UDim2.new(0.25, 0, 1, 0)
+T1.Font = Enum.Font.GothamBold
+T1.Text = "UNPATCHA"
+T1.TextColor3 = Color3.fromRGB(255, 255, 255)
+T1.TextSize = 14.000
+T1.TextXAlignment = Enum.TextXAlignment.Right
+
+T2.Name = "T2"
+T2.Parent = TopFrame
+T2.BackgroundTransparency = 1.000
+T2.Position = UDim2.new(0.26, 0, 0, 0)
+T2.Size = UDim2.new(0.5, 0, 1, 0)
+T2.Font = Enum.Font.Gotham
+T2.Text = "BOMB (EN)"
+T2.TextColor3 = Color3.fromRGB(255, 255, 255)
+T2.TextSize = 14.000
+T2.TextXAlignment = Enum.TextXAlignment.Left
+
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = UnpatchabombFrame
+MainFrame.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0, 0, 0, 28)
+MainFrame.Size = UDim2.new(1, 0, 1, -28)
+
+LetterBox.Name = "LetterBox"
+LetterBox.Parent = MainFrame
+LetterBox.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+LetterBox.BorderColor3 = Color3.fromRGB(255, 255, 255)
+LetterBox.BorderSizePixel = 0
+LetterBox.Position = UDim2.new(0.02, 0, 0.05, 0)
+LetterBox.Size = UDim2.new(0.66, 0, 0.12, 0)
+LetterBox.Font = Enum.Font.GothamBold
+LetterBox.Text = ""
+LetterBox.PlaceholderText = "Letters (Press Enter)"
+LetterBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+LetterBox.TextSize = 14.000
+LetterBox.ClearTextOnFocus = false
+
+AutoBtn.Name = "AutoBtn"
+AutoBtn.Parent = MainFrame
+AutoBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+AutoBtn.Position = UDim2.new(0.70, 0, 0.05, 0)
+AutoBtn.Size = UDim2.new(0.28, 0, 0.12, 0)
+AutoBtn.Font = Enum.Font.GothamBold
+AutoBtn.Text = "AUTO: OFF"
+AutoBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+AutoBtn.TextSize = 12.000
+
+CategoryBtn.Name = "CategoryBtn"
+CategoryBtn.Parent = MainFrame
+CategoryBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+CategoryBtn.Position = UDim2.new(0.02, 0, 0.19, 0)
+CategoryBtn.Size = UDim2.new(0.66, 0, 0.1, 0)
+CategoryBtn.Font = Enum.Font.GothamBold
+CategoryBtn.Text = "Category: LONG WORDS"
+CategoryBtn.TextColor3 = Color3.fromRGB(0, 200, 255)
+CategoryBtn.TextSize = 12.000
+
+ReloadBtn.Name = "ReloadBtn"
+ReloadBtn.Parent = MainFrame
+ReloadBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+ReloadBtn.Position = UDim2.new(0.70, 0, 0.19, 0)
+ReloadBtn.Size = UDim2.new(0.28, 0, 0.1, 0)
+ReloadBtn.Font = Enum.Font.GothamBold
+ReloadBtn.Text = "RELOAD"
+ReloadBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+ReloadBtn.TextSize = 12.000
+
+DelayBox.Name = "DelayBox"
+DelayBox.Parent = MainFrame
+DelayBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+DelayBox.BorderSizePixel = 0
+DelayBox.Position = UDim2.new(0.02, 0, 0.31, 0)
+DelayBox.Size = UDim2.new(0.96, 0, 0.08, 0)
+DelayBox.Font = Enum.Font.GothamBold
+DelayBox.Text = "0.035"
+DelayBox.PlaceholderText = "Type Delay (e.g. 0.05)"
+DelayBox.TextColor3 = Color3.fromRGB(0, 255, 150)
+DelayBox.TextSize = 12.000
+DelayBox.ClearTextOnFocus = false
+
+WordText.Name = "WordText"
+WordText.Parent = MainFrame
+WordText.BackgroundTransparency = 1.000
+WordText.Position = UDim2.new(0, 0, 0.41, 0)
+WordText.Size = UDim2.new(1, 0, 0.08, 0)
+WordText.Font = Enum.Font.GothamBold
+WordText.Text = "Waiting for input..."
+WordText.TextColor3 = Color3.fromRGB(255, 255, 255)
+WordText.TextSize = 12.000
+
+SuggestionList.Name = "SuggestionList"
+SuggestionList.Parent = MainFrame
+SuggestionList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+SuggestionList.BorderSizePixel = 0
+SuggestionList.Position = UDim2.new(0.02, 0, 0.51, 0)
+SuggestionList.Size = UDim2.new(0.96, 0, 0.36, 0) -- Adjusted height to fit buttons
+SuggestionList.ScrollBarThickness = 4
+
+ListLayout.Parent = SuggestionList
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 2)
+
+-- Configured Whitelist Button
+WhitelistBtn.Name = "WhitelistBtn"
+WhitelistBtn.Parent = MainFrame
+WhitelistBtn.BackgroundColor3 = Color3.fromRGB(35, 45, 35)
+WhitelistBtn.Position = UDim2.new(0.02, 0, 0.89, 0)
+WhitelistBtn.Size = UDim2.new(0.47, 0, 0.09, 0)
+WhitelistBtn.Font = Enum.Font.GothamBold
+WhitelistBtn.Text = "ADD WHITELIST"
+WhitelistBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+WhitelistBtn.TextSize = 11.000
+
+-- Configured Blacklist Button
+BlacklistBtn.Name = "BlacklistBtn"
+BlacklistBtn.Parent = MainFrame
+BlacklistBtn.BackgroundColor3 = Color3.fromRGB(45, 35, 35)
+BlacklistBtn.Position = UDim2.new(0.51, 0, 0.89, 0)
+BlacklistBtn.Size = UDim2.new(0.47, 0, 0.09, 0)
+BlacklistBtn.Font = Enum.Font.GothamBold
+BlacklistBtn.Text = "ADD BLACKLIST"
+BlacklistBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+BlacklistBtn.TextSize = 11.000
+
+-- Make GUI Draggable
+local dragging, dragInput, dragStart, startPos
+TopFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = UnpatchabombFrame.Position
+    end
+end)
+TopFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        UnpatchabombFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+local WORDS = {}
+local IDA_alreadyUsed = {}
+local autoGetEnabled = false
+local currentTypeDelay = 0.035 
+local Whitelist = {}
+local Blacklist = {}
+
+DelayBox.FocusLost:Connect(function()
+    local newDelay = tonumber(DelayBox.Text)
+    if newDelay then
+        currentTypeDelay = newDelay
+        DelayBox.Text = tostring(newDelay)
+    else
+        DelayBox.Text = tostring(currentTypeDelay)
+    end
+end)
+
+local uselessMap = {}
+local function ReloadDictionary()
+    WordText.Text = "Loading dictionary..."
+    WORDS = {}
+    IDA_alreadyUsed = {} 
+    
+    for _, child in ipairs(SuggestionList:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+
+    task.spawn(function()
+        local fetchSuccess, result = pcall(function()
+            return game:HttpGetAsync("https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt")
+        end)
+
+        if fetchSuccess and result then
+            for word in string.gmatch(result, "[^\r\n]+") do
+                if #word >= 3 then
+                    local cleanWord = string.lower(word)
+                    if not uselessMap[cleanWord] then
+                        table.insert(WORDS, cleanWord)
+                    end
+                end
+            end
+            WordText.Text = "Loaded " .. #WORDS .. " words."
+        else
+            WordText.Text = "Failed to load dictionary."
+        end
+    end)
+end
+
+ReloadBtn.MouseButton1Click:Connect(ReloadDictionary)
+ReloadDictionary()
+
+local SpecialKeys = {
+    ["-"] = Enum.KeyCode.Minus,
+    ["'"] = Enum.KeyCode.Quote,
+    ["."] = Enum.KeyCode.Period,
+    [","] = Enum.KeyCode.Comma,
+    [" "] = Enum.KeyCode.Space
+}
+
+local function SimulateKey(char)
+    local vimSuccess = pcall(function()
+        VirtualInputManager:SendTextInput(char)
+    end)
+    
+    if not vimSuccess then
+        local key = SpecialKeys[char]
+        
+        if not key then
+            pcall(function() key = Enum.KeyCode[char:upper()] end)
+        end
+        
+        if key then
+            pcall(function()
+                VirtualInputManager:SendKeyEvent(true, key, false, game)
+                task.wait(0.01)
+                VirtualInputManager:SendKeyEvent(false, key, false, game)
+            end)
+        end
+    end
+end
+
+local function IDA_autoType(word)
+    if not word or word == "" then return end
+    
+    for i = 1, #word do
+        local ch = word:sub(i, i)
+        SimulateKey(ch)
+        task.wait(currentTypeDelay)
+    end
+    
+    task.wait(currentTypeDelay * 1.5)
+    pcall(function()
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        task.wait(0.015)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+    end)
+end
+
+local categories = {"LONG", "SHORT", "RANDOM"}
+local currentCatIndex = 1
+local lastQuery = ""
+
+CategoryBtn.MouseButton1Click:Connect(function()
+    currentCatIndex = currentCatIndex + 1
+    if currentCatIndex > #categories then currentCatIndex = 1 end
+    
+    local mode = categories[currentCatIndex]
+    local color = Color3.fromRGB(255, 255, 255)
+    
+    if mode == "LONG" then color = Color3.fromRGB(0, 200, 255)
+    elseif mode == "SHORT" then color = Color3.fromRGB(255, 200, 0)
+    elseif mode == "RANDOM" then color = Color3.fromRGB(150, 100, 255) end
+    
+    CategoryBtn.Text = "Category: " .. mode .. " WORDS"
+    CategoryBtn.TextColor3 = color
+    
+    if lastQuery ~= "" then
+        updateSuggestions(lastQuery)
+    end
+end)
+
+local function IDA_tableItemExists(array, val)
+    for i, v in ipairs(array) do
+        if v == val then return true end
+    end
+    return false
+end
+
+-- Whitelist / Blacklist Logics
+WhitelistBtn.MouseButton1Click:Connect(function()
+    local word = string.lower(string.gsub(LetterBox.Text, "%s+", ""))
+    if word ~= "" and not IDA_tableItemExists(Whitelist, word) then
+        table.insert(Whitelist, word)
+        WordText.Text = "Whitelisted: " .. word
+        if lastQuery ~= "" then updateSuggestions(lastQuery) end
+    end
+end)
+
+BlacklistBtn.MouseButton1Click:Connect(function()
+    local word = string.lower(string.gsub(LetterBox.Text, "%s+", ""))
+    if word ~= "" and not IDA_tableItemExists(Blacklist, word) then
+        table.insert(Blacklist, word)
+        WordText.Text = "Blacklisted: " .. word
+        if lastQuery ~= "" then updateSuggestions(lastQuery) end
+    end
+end)
+
+
+function updateSuggestions(query)
+    query = string.lower(query)
+    lastQuery = query
+    
+    for _, child in ipairs(SuggestionList:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+
+    if query == "" then 
+        WordText.Text = "Waiting for input..."
+        return 
+    end
+
+    WordText.Text = "Searching for: " .. query
+
+    local matches = {}
+    for _, w in ipairs(WORDS) do
+        -- Skip if used OR if blacklisted
+        if string.find(w, query, 1, true) and not IDA_tableItemExists(IDA_alreadyUsed, w) and not IDA_tableItemExists(Blacklist, w) then
+            table.insert(matches, w)
+        end
+    end
+
+    local mode = categories[currentCatIndex]
+    
+    -- Sorting mixed with Whitelist Prioritization
+    if mode == "RANDOM" then
+        for i = #matches, 2, -1 do
+            local j = math.random(i)
+            matches[i], matches[j] = matches[j], matches[i]
+        end
+        -- Move whitelisted items to top, preserving random layout for the rest
+        table.sort(matches, function(a, b)
+            local aWhite = IDA_tableItemExists(Whitelist, a)
+            local bWhite = IDA_tableItemExists(Whitelist, b)
+            if aWhite and not bWhite then return true end
+            if bWhite and not aWhite then return false end
+            return false 
+        end)
+    else
+        table.sort(matches, function(a, b)
+            local aWhite = IDA_tableItemExists(Whitelist, a)
+            local bWhite = IDA_tableItemExists(Whitelist, b)
+            
+            if aWhite and not bWhite then return true end
+            if bWhite and not aWhite then return false end
+            
+            if mode == "LONG" then
+                return #a > #b
+            elseif mode == "SHORT" then
+                return #a < #b
+            end
+        end)
+    end
+
+    local ySize = 0
+    local limit = math.min(50, #matches)
+    
+    if limit == 0 then
+        WordText.Text = "No valid words found."
+        return
+    else
+        WordText.Text = "Found " .. #matches .. " words (Showing Top " .. limit .. ")"
+    end
+
+    for i = 1, limit do
+        local word = matches[i]
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 25)
+        
+        -- Color coding: Mark whitelisted words visibly
+        if IDA_tableItemExists(Whitelist, word) then
+            btn.BackgroundColor3 = Color3.fromRGB(30, 80, 30)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        end
+        
+        btn.Text = string.upper(word) .. " (" .. #word .. ")"
+        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        btn.Font = Enum.Font.Gotham
+        btn.TextSize = 12
+        btn.Parent = SuggestionList
+        
+        btn.MouseButton1Click:Connect(function()
+            btn.BackgroundColor3 = Color3.fromRGB(40, 150, 40)
+            btn.Text = "TYPING..."
+            table.insert(IDA_alreadyUsed, word)
+            
+            task.spawn(function()
+                IDA_autoType(word)
+                task.wait(0.5)
+                if btn.Parent then btn:Destroy() end
+            end)
+        end)
+        
+        ySize = ySize + 27
+    end
+    
+    SuggestionList.CanvasSize = UDim2.new(0, 0, 0, ySize)
+end
+
+LetterBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local sanitized = string.gsub(LetterBox.Text, "%s+", "")
+        updateSuggestions(sanitized)
+    end
+end)
+
+-----------------------------------
+-- AUTO GET LETTER LOGIC
+-----------------------------------
+AutoBtn.MouseButton1Click:Connect(function()
+    autoGetEnabled = not autoGetEnabled
+    if autoGetEnabled then
+        AutoBtn.Text = "AUTO: ON"
+        AutoBtn.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        AutoBtn.Text = "AUTO: OFF"
+        AutoBtn.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end)
+
+local function GetGameLetters()
+    local combinedLetters = ""
+    pcall(function()
+        local textFrame = Players.LocalPlayer.PlayerGui.GameUI.Container.GameSpace.DefaultUI.GameContainer.Mobile.MobileContainer.InfoFrame.TextFrame
+        
+        for _, child in ipairs(textFrame:GetChildren()) do
+            if string.lower(child.Name) == "letterframe" and child.Visible == true then
+                local letterHolder = child:FindFirstChild("Letter")
+                if letterHolder then
+                    local textLabel = letterHolder:FindFirstChild("TextLabel")
+                    if textLabel and textLabel.Text then
+                        combinedLetters = combinedLetters .. textLabel.Text
+                    end
+                end
+            end
+        end
+    end)
+    return combinedLetters
+end
+
+task.spawn(function()
+    while task.wait(0.3) do
+        if autoGetEnabled then
+            local newLetters = GetGameLetters()
+            newLetters = string.gsub(newLetters, "%s+", "") 
+            
+            if newLetters ~= "" and string.lower(newLetters) ~= string.lower(lastQuery) then
+                LetterBox.Text = newLetters
+                updateSuggestions(newLetters)
+            end
+        end
+    end
+end)
+
