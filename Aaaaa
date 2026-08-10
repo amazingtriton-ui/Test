@@ -650,7 +650,7 @@ laryngotracheobronchitides = true,
     blepharokeratoconjunctivitis = true,
     ["lacto-ovo-vegetarian"] = true,
     ["lacto-ovo-vegetarians"] = true,
-    Intracerebroventricularly = true,
+    intracerebroventricularly = true,
     chemolithoautotrophically = true,
     ["faculties-in-residence"] = true,
     ["theologians-in-residence"] = true,
@@ -830,7 +830,6 @@ laryngotracheobronchitides = true,
     ["mountain-gem"] = true,
     ["mountain-gems"] = true,
     ["ampicillin-sulbactam"] = true
-}
 }
 local function LoadList(fname)
     UpdateStatus("Parsing word list...", THEME.Warning)
