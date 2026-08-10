@@ -823,7 +823,14 @@ laryngotracheobronchitides = true,
     ["forty-six"] = true,
     ["forty-seven"] = true,
     ["forty-eight"] = true,
-    ["forty-nine"] = true
+    ["forty-nine"] = true,
+    xicanx = true,
+    ["x'ing"] = true,
+    ["slow-mo"] = true,
+    ["mountain-gem"] = true,
+    ["mountain-gems"] = true,
+    ["ampicillin-sulbactam"] = true
+}
 }
 local function LoadList(fname)
     UpdateStatus("Parsing word list...", THEME.Warning)
