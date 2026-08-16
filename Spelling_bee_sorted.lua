@@ -21,6 +21,18 @@ local GuiScale = Instance.new("UIScale")
 
 -- Hardcoded Dictionary
 local HARDCODED_WORDS = {
+    "electronystagmography",
+    "amylosucrase",
+    "youthful",
+    "born",
+    "wow",
+    "hexanitrohexaazatricyclododecanedione",
+    "ferroequinologist",
+    "peristerophily",
+    "hypocritical",
+    "shoulder",
+    "zone",
+    "owl",
     "parliamentary",
     "paroxysm",
     "perfidious",
