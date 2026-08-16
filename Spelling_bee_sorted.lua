@@ -21,6 +21,24 @@ local GuiScale = Instance.new("UIScale")
 
 -- Hardcoded Dictionary
 local HARDCODED_WORDS = {
+    "triphosphate",
+    "photoreconnaissance",
+    "reninangiotensinaldosterone",
+    "be",
+    "irascible",
+    "too",
+    "to",
+    "slay",
+    "prey",
+    "proceleusmatic",
+    "armour",
+    "haemoglobin",
+    "immobilise",
+    "panproctocolectomy",
+    "puerile",
+    "schizophrenic",
+    "thermoluminescence",
+    "ethnopsychopharmacology"
     "electronystagmography",
     "amylosucrase",
     "youthful",
