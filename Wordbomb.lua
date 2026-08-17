@@ -582,7 +582,7 @@ local function IDA_tableItemExists(array, val)
     return false
 end
 
-function updateSuggestions(query)
+    updateSuggestions(query)
     query = string.lower(query)
     lastQuery = query
     
