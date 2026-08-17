@@ -248,7 +248,7 @@ local function ReloadDictionary()
 
         task.spawn(function()
         local urls = {
-            "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/merged_unique_words.txt",
+            "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/Uvulopalatopharyngoplasty.lua",
         }
 
         local loadedCount = 0
