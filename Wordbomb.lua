@@ -205,6 +205,9 @@ local autoGetEnabled = false
 local currentTypeDelay = 0.035 
 local lastQuery = ""
 
+-- ADD THIS LINE: Forward declare the function so earlier code can see it
+local updateSuggestions 
+
 -- Whitelist and Blacklist Maps & Saving Logic
 local CustomWhitelist = {}
 local CustomBlacklist = {}
@@ -579,7 +582,7 @@ local function IDA_tableItemExists(array, val)
     return false
 end
 
-local function updateSuggestions(query)
+function updateSuggestions(query)
     query = string.lower(query)
     lastQuery = query
     
