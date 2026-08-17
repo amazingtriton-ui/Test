@@ -255,8 +255,9 @@ local function ReloadDictionary()
         
         for _, url in ipairs(urls) do
             local fetchSuccess, result = pcall(function()
-                return game:HttpGetAsync(url)
-            end)
+             return game:HttpGet(url)
+                         
+                    end)
 
             if fetchSuccess and result then
                 for word in string.gmatch(result, "[^\r\n]+") do
@@ -578,7 +579,7 @@ local function IDA_tableItemExists(array, val)
     return false
 end
 
-function updateSuggestions(query)
+local function updateSuggestions(query)
     query = string.lower(query)
     lastQuery = query
     
