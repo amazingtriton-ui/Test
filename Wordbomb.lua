@@ -4,6 +4,17 @@ local CoreGui = game:GetService("CoreGui")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 
+-- Destroy any old/orphaned GUIs so buttons don't break on re-execution
+pcall(function()
+    if CoreGui:FindFirstChild("Unpatchabomb") then
+        CoreGui.Unpatchabomb:Destroy()
+    end
+    local playerGui = Players.LocalPlayer:FindFirstChild("PlayerGui")
+    if playerGui and playerGui:FindFirstChild("Unpatchabomb") then
+        playerGui.Unpatchabomb:Destroy()
+    end
+end)
+
 local Unpatchabomb = Instance.new("ScreenGui")
 local UnpatchabombFrame = Instance.new("Frame")
 local MainFrame = Instance.new("Frame")
@@ -205,7 +216,7 @@ local autoGetEnabled = false
 local currentTypeDelay = 0.035 
 local lastQuery = ""
 
--- ADD THIS LINE: Forward declare the function so earlier code can see it
+-- Correct Forward Declaration
 local updateSuggestions 
 
 -- Whitelist and Blacklist Maps & Saving Logic
@@ -249,7 +260,7 @@ local function ReloadDictionary()
         end
     end
 
-        task.spawn(function()
+    task.spawn(function()
         local urls = {
             "https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/Uvulopalatopharyngoplasty.lua",
         }
@@ -258,12 +269,19 @@ local function ReloadDictionary()
         
         for _, url in ipairs(urls) do
             local fetchSuccess, result = pcall(function()
-             return game:HttpGet(url)
-                         
-                    end)
+                return game:HttpGet(url)
+            end)
 
             if fetchSuccess and result then
+                local loopIterations = 0
                 for word in string.gmatch(result, "[^\r\n]+") do
+                    loopIterations = loopIterations + 1
+                    
+                    -- Yield every 5,000 words so mobile executors don't crash
+                    if loopIterations % 5000 == 0 then 
+                        task.wait() 
+                    end
+                    
                     if #word >= 3 then
                         local cleanWord = string.lower(word)
                         if not uselessMap[cleanWord] then
@@ -289,7 +307,7 @@ local function ReloadDictionary()
             WordText.Text = "Failed to load dictionaries."
         end
     end)
-
+end
 
 DelayBox.FocusLost:Connect(function()
     local newDelay = tonumber(DelayBox.Text)
@@ -333,7 +351,7 @@ local function CreateListMenu(titleText)
     CloseBtn.BorderSizePixel = 0
     CloseBtn.ZIndex = 11
     
-        local InputBox = Instance.new("TextBox", Menu)
+    local InputBox = Instance.new("TextBox", Menu)
     InputBox.Size = UDim2.new(0.5, 0, 0.1, 0)
     InputBox.Position = UDim2.new(0.05, 0, 0.18, 0)
     InputBox.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
@@ -383,7 +401,7 @@ local function CreateListMenu(titleText)
         Menu.Visible = false
     end)
     
-        return Menu, InputBox, AddBtn, CopyBtn, ScrollList
+    return Menu, InputBox, AddBtn, CopyBtn, ScrollList
 end
 
 local WLMenu, WLInput, WLAdd, WLCopy, WLList = CreateListMenu("WHITELIST")
@@ -429,7 +447,7 @@ local function UpdateMenuVisuals(listUI, mapData, isWhitelist)
                 local idx = table.find(WORDS, w)
                 if idx then table.remove(WORDS, idx) end
             end
-            SaveData() -- Save after removal
+            SaveData() 
             UpdateMenuVisuals(listUI, mapData, isWhitelist)
             if lastQuery ~= "" then updateSuggestions(lastQuery) end
         end)
@@ -439,11 +457,9 @@ local function UpdateMenuVisuals(listUI, mapData, isWhitelist)
     listUI.CanvasSize = UDim2.new(0, 0, 0, ySize)
 end
 
--- Populate initial lists if data was loaded
 UpdateMenuVisuals(WLList, CustomWhitelist, true)
 UpdateMenuVisuals(BLList, CustomBlacklist, false)
 
--- Open Menus
 WhitelistBtn.MouseButton1Click:Connect(function()
     WLMenu.Visible = true
     BLMenu.Visible = false
@@ -456,7 +472,6 @@ BlacklistBtn.MouseButton1Click:Connect(function()
     UpdateMenuVisuals(BLList, CustomBlacklist, false)
 end)
 
--- Copy Logic
 WLCopy.MouseButton1Click:Connect(function()
     local wlWords = {}
     for w, _ in pairs(CustomWhitelist) do table.insert(wlWords, w) end
@@ -477,8 +492,6 @@ BLCopy.MouseButton1Click:Connect(function()
     end
 end)
 
-
--- Add Logic
 WLAdd.MouseButton1Click:Connect(function()
     local w = string.lower(string.gsub(WLInput.Text, "%s+", ""))
     if w ~= "" and not CustomWhitelist[w] then
@@ -486,7 +499,7 @@ WLAdd.MouseButton1Click:Connect(function()
         if not table.find(WORDS, w) then
             table.insert(WORDS, w)
         end
-        SaveData() -- Save after addition
+        SaveData() 
         WLInput.Text = ""
         UpdateMenuVisuals(WLList, CustomWhitelist, true)
         if lastQuery ~= "" then updateSuggestions(lastQuery) end
@@ -497,7 +510,7 @@ BLAdd.MouseButton1Click:Connect(function()
     local w = string.lower(string.gsub(BLInput.Text, "%s+", ""))
     if w ~= "" and not CustomBlacklist[w] then
         CustomBlacklist[w] = true
-        SaveData() -- Save after addition
+        SaveData() 
         BLInput.Text = ""
         UpdateMenuVisuals(BLList, CustomBlacklist, false)
         if lastQuery ~= "" then updateSuggestions(lastQuery) end
@@ -582,7 +595,8 @@ local function IDA_tableItemExists(array, val)
     return false
 end
 
-    updateSuggestions(query)
+-- Function accurately assigned to local variable
+updateSuggestions = function(query)
     query = string.lower(query)
     lastQuery = query
     
@@ -601,7 +615,6 @@ end
 
     local matches = {}
     for _, w in ipairs(WORDS) do
-        -- Skip if word is in Blacklist!
         if not CustomBlacklist[w] then
             if string.find(w, query, 1, true) and not IDA_tableItemExists(IDA_alreadyUsed, w) then
                 table.insert(matches, w)
@@ -610,7 +623,7 @@ end
     end
 
     local mode = categories[currentCatIndex]
-    
+
     if mode == "LONG" then
         table.sort(matches, function(a, b) return #a > #b end)
     elseif mode == "SHORT" then
@@ -654,7 +667,7 @@ end
                 if btn.Parent then btn:Destroy() end
             end)
         end)
-        
+
         ySize = ySize + 27
     end
     
@@ -668,9 +681,6 @@ LetterBox.FocusLost:Connect(function(enterPressed)
     end
 end)
 
------------------------------------
--- AUTO GET LETTER LOGIC
------------------------------------
 AutoBtn.MouseButton1Click:Connect(function()
     autoGetEnabled = not autoGetEnabled
     if autoGetEnabled then
