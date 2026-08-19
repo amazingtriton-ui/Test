@@ -1045,7 +1045,16 @@ local HARDCODED_WORDS = {
 "uvulopalatopharyngoplasty",
 "ventriculocisternostomy",
 "xanthogranulomatouspyelonephritis",
-"zoanthroprosopometamorphopsia"
+"zoanthroprosopometamorphopsia",
+"malifluous",
+"oesophagogastroduodenoscopy",
+"lad",
+"dive",
+"poised",
+"scutoid",
+"concomitance",
+"zanthoxylaceae",
+"sulfoquinovosyldiacylglycerol"
 }
 
 -- Setup GUI
