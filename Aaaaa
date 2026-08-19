@@ -2044,32 +2044,6 @@ CWAddBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-    if Blacklist[text] then
-        Blacklist[text] = nil
-        for idx, bw in ipairs(Config.BlacklistedWords) do
-            if bw == text then
-                table.remove(Config.BlacklistedWords, idx)
-                break
-            end
-        end
-    end
-
-    table.insert(Config.CustomWords, text)
-    SaveConfig()
-    
-    if not existsInMain then
-        table.insert(Words, text)
-        if c == "" then c = "#" end
-        Buckets[c] = Buckets[c] or {}
-        table.insert(Buckets[c], text)
-    end
-    
-    CWAddBox.Text = ""
-    CWAddBox:ReleaseFocus()
-    RefreshCustomWords()
-    ShowToast("Added custom word: " .. text, "success")
-end)
-
 
 RefreshCustomWords()
 
