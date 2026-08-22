@@ -1261,41 +1261,54 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 CopyBtn.MouseButton1Click:Connect(function()
-    local copiedWords = {}
-    local count = 0
-    
-    -- Loop through the existing button cache to find visible suggestions
-    for _, btn in ipairs(ButtonCache) do
-        if btn.Visible then
-            local data = ButtonData[btn]
-            if data and data.word then
-                table.insert(copiedWords, data.word)
-                count = count + 1
-                if count >= 100 then break end -- Max 100 words
+    local success, err = pcall(function()
+        local copiedWords = {}
+        local count = 0
+        
+        -- Safely loop through button cache
+        for _, btn in ipairs(ButtonCache) do
+            if typeof(btn) == "Instance" and btn.Visible then
+                local data = ButtonData[btn]
+                if data and data.word then
+                    table.insert(copiedWords, tostring(data.word))
+                    count = count + 1
+                    if count >= 100 then break end -- Max 100 words
+                end
             end
         end
-    end
-    
-    if count > 0 then
-        local textToCopy = table.concat(copiedWords, ", ")
-        local copySuccess = false
         
-        -- Safely check for function type and execute with a protected call
-        if type(setclipboard) == "function" then
-            copySuccess = pcall(setclipboard, textToCopy)
-        elseif type(toclipboard) == "function" then
-            copySuccess = pcall(toclipboard, textToCopy)
-        end
-        
-        if copySuccess then
-            ShowToast("Copied " .. count .. " words!", "success")
+        if count > 0 then
+            local textToCopy = table.concat(copiedWords, ", ")
+            
+            -- Safely locate a clipboard function (Delta sometimes hides it in getgenv)
+            local env = (getgenv and getgenv()) or getfenv()
+            local copyFunc = env.setclipboard or env.toclipboard or setclipboard or toclipboard
+            
+            if type(copyFunc) == "function" then
+                -- Final protected call
+                local execSuccess, execErr = pcall(function()
+                    copyFunc(textToCopy)
+                end)
+                
+                if execSuccess then
+                    ShowToast("Copied " .. count .. " words!", "success")
+                else
+                    ShowToast("Delta clipboard error: " .. tostring(execErr), "error")
+                end
+            else
+                ShowToast("Delta does not support clipboard copying.", "error")
+            end
         else
-            ShowToast("Executor does not support clipboard copying.", "error")
+            ShowToast("No words to copy!", "warning")
         end
-    else
-        ShowToast("No words to copy!", "warning")
+    end)
+
+    if not success then
+        warn("WordHelper Copy Error: " .. tostring(err))
+        ShowToast("Script Error! Check console (F9).", "error")
     end
 end)
+
 
 
 
