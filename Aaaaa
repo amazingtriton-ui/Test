@@ -1278,13 +1278,16 @@ CopyBtn.MouseButton1Click:Connect(function()
     
     if count > 0 then
         local textToCopy = table.concat(copiedWords, ", ")
+        local copySuccess = false
         
-        -- Support for standard executor clipboard functions
-        if setclipboard then
-            setclipboard(textToCopy)
-            ShowToast("Copied " .. count .. " words!", "success")
-        elseif toclipboard then
-            toclipboard(textToCopy)
+        -- Safely check for function type and execute with a protected call
+        if type(setclipboard) == "function" then
+            copySuccess = pcall(setclipboard, textToCopy)
+        elseif type(toclipboard) == "function" then
+            copySuccess = pcall(toclipboard, textToCopy)
+        end
+        
+        if copySuccess then
             ShowToast("Copied " .. count .. " words!", "success")
         else
             ShowToast("Executor does not support clipboard copying.", "error")
@@ -1293,6 +1296,7 @@ CopyBtn.MouseButton1Click:Connect(function()
         ShowToast("No words to copy!", "warning")
     end
 end)
+
 
 
 local StatusFrame = Instance.new("Frame", MainFrame)
