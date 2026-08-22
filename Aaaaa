@@ -1280,21 +1280,23 @@ CopyBtn.MouseButton1Click:Connect(function()
         local textToCopy = table.concat(copiedWords, ", ")
         local copySuccess = false
         
-        -- Safely fetch the clipboard function without triggering strict global errors
-        local clipboardFunc = setclipboard or toclipboard or (getgenv and (getgenv().setclipboard or getgenv().toclipboard))
+        -- Safely extract the executor environment without triggering strict globals
+        local env = nil
+        pcall(function() env = getgenv and getgenv() or getfenv(0) end)
         
-        if clipboardFunc then
-            -- Wrap the call in an anonymous function to prevent C-closure boundary issues
-            local success, err = pcall(function()
-                clipboardFunc(textToCopy)
-            end)
-            copySuccess = success
+        -- Strictly verify the function exists and is actually a function before calling
+        if env then
+            if type(env.setclipboard) == "function" then
+                copySuccess = pcall(env.setclipboard, textToCopy)
+            elseif type(env.toclipboard) == "function" then
+                copySuccess = pcall(env.toclipboard, textToCopy)
+            end
         end
         
         if copySuccess then
             ShowToast("Copied " .. tostring(count) .. " words!", "success")
         else
-            ShowToast("Executor clipboard failed or is unsupported.", "error")
+            ShowToast("Clipboard not supported on this executor.", "error")
         end
     else
         ShowToast("No words to copy!", "warning")
