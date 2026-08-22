@@ -1238,6 +1238,16 @@ CloseBtn.Size = UDim2.new(0, 45, 1, 0)
 CloseBtn.Position = UDim2.new(1, -45, 0, 0)
 CloseBtn.BackgroundTransparency = 1
 
+local CopyBtn = Instance.new("TextButton", Header)
+CopyBtn.Text = "C"
+CopyBtn.Font = Enum.Font.GothamBold
+CopyBtn.TextSize = 18
+CopyBtn.TextColor3 = THEME.Accent
+CopyBtn.Size = UDim2.new(0, 45, 1, 0)
+CopyBtn.Position = UDim2.new(1, -135, 0, 0)
+CopyBtn.BackgroundTransparency = 1
+
+
 CloseBtn.MouseButton1Click:Connect(function()
     unloaded = true
     if runConn then runConn:Disconnect() runConn = nil end
@@ -1249,6 +1259,41 @@ CloseBtn.MouseButton1Click:Connect(function()
 
     if ScreenGui and ScreenGui.Parent then ScreenGui:Destroy() end
 end)
+
+CopyBtn.MouseButton1Click:Connect(function()
+    local copiedWords = {}
+    local count = 0
+    
+    -- Loop through the existing button cache to find visible suggestions
+    for _, btn in ipairs(ButtonCache) do
+        if btn.Visible then
+            local data = ButtonData[btn]
+            if data and data.word then
+                table.insert(copiedWords, data.word)
+                count = count + 1
+                if count >= 100 then break end -- Max 100 words
+            end
+        end
+    end
+    
+    if count > 0 then
+        local textToCopy = table.concat(copiedWords, ", ")
+        
+        -- Support for standard executor clipboard functions
+        if setclipboard then
+            setclipboard(textToCopy)
+            ShowToast("Copied " .. count .. " words!", "success")
+        elseif toclipboard then
+            toclipboard(textToCopy)
+            ShowToast("Copied " .. count .. " words!", "success")
+        else
+            ShowToast("Executor does not support clipboard copying.", "error")
+        end
+    else
+        ShowToast("No words to copy!", "warning")
+    end
+end)
+
 
 local StatusFrame = Instance.new("Frame", MainFrame)
 StatusFrame.Size = UDim2.new(1, -30, 0, 24)
