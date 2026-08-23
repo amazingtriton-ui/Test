@@ -126,6 +126,7 @@ local cachedCensored = false
 local LOGIC_RATE = 0.1
 local AUTO_JOIN_RATE = 0.5
 local UpdateList
+local SmartType
 local ButtonCache = {}
 local ButtonData = {}
 local JoinDebounce = {}
@@ -2856,9 +2857,8 @@ local function GetGameTextBox()
     return UserInputService:GetFocusedTextBox()
 end
 
-local function SmartType(targetWord, currentDetected, isCorrection, bypassTurn)
+SmartType = function(targetWord, currentDetected, isCorrection, bypassTurn)
     if unloaded then return end
-    
     if isTyping then
         if (tick() - lastTypingStart) > 15 then
             isTyping = false
