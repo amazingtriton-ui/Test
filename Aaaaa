@@ -1911,13 +1911,6 @@ CWClearBtn.Size = UDim2.new(0, 45, 0, 24)
 CWClearBtn.Position = UDim2.new(0, 135, 1, -35)
 Instance.new("UICorner", CWClearBtn).CornerRadius = UDim.new(0, 4)
 
-CWClearBtn.MouseButton1Click:Connect(function()
-    Config.CustomWords = {}
-    SaveConfig()
-    RefreshCustomWords()
-    ShowToast("Cleared all custom words!", "warning")
-end)
-
 local CWAddBtn = Instance.new("TextButton", CustomWordsFrame)
 CWAddBtn.Text = "Add"
 CWAddBtn.Font = Enum.Font.GothamBold
@@ -1927,7 +1920,6 @@ CWAddBtn.BackgroundColor3 = THEME.ItemBG
 CWAddBtn.Size = UDim2.new(0, 50, 0, 24)
 CWAddBtn.Position = UDim2.new(1, -60, 1, -35)
 Instance.new("UICorner", CWAddBtn).CornerRadius = UDim.new(0, 4)
-
 
 local function RefreshCustomWords()
     for _, c in ipairs(CWScroll:GetChildren()) do
@@ -1994,10 +1986,15 @@ local function RefreshCustomWords()
     CWScroll.CanvasSize = UDim2.new(0, 0, 0, shownCount * 24)
 end
 
-
 CWSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshCustomWords)
 
-CWAddBtn.MouseButton1Click:Connect(function()
+CWClearBtn.MouseButton1Click:Connect(function()
+    Config.CustomWords = {}
+    SaveConfig()
+    RefreshCustomWords()
+    ShowToast("Cleared all custom words!", "warning")
+end)
+
     local text = CWAddBox.Text
     if text == "Add new word..." or text == "" then return end
     
