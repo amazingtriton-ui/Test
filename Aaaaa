@@ -148,7 +148,7 @@ logConn = LogService.MessageOut:Connect(function(message, type)
     end
 end)
 
-local url = "https://raw.githubusercontent.com/skrylor/english-words/refs/heads/main/merged_english.txt"
+local url = "https://raw.githubusercontent.com/amazingtriton-ui/aAaaaaAaAAAA-AAAAUBBVFFIBVRFVNRFINV/refs/heads/main/duplicate-lines-result.txt"
 local fileName = "ultimate_words_v4.txt"
 
 -- Temporary Loading UI
@@ -905,9 +905,12 @@ local HardLetterScores = {
     lh = 21, sf = 21, pf = 21, dm = 21, wt = 21, fc = 21, tx = 21, hm = 21,
     sb = 21, er = 17, uv = 17, gy = 19, yg = 21, xo = 20, cy = 17, ox = 19, cw = 21,
     lw = 21, yp = 21, jy = 21, dae = 20, aly = 20, pse = 20, epia = 48, ving = 20,
-    jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tsi = 20, ror = 20, gia = 20, eep = 20, ngo = 20,
+    jji = 20, ers = 20, ndo = 20, nga = 20, adz = 20, tze = 20, tzi = 20, ror = 20, gia = 20, eep = 20, 
+    ngo = 20,
     adz = 20, ipa = 47, xing = 20, ning = 20, ary = 20, nys = 20, obia = 20, phae = 20, raph = 20, phyl = 20,
-    kry = 20, gada = 20, anoi = 20, kong = 20, aque = 20, cats = 20, mbuk = 20, ung = 20, ugg = 20, ols = 23, elp = 23, iy = 47, rg = 21, cd = 21
+    kry = 20, gada = 20, anoi = 20, kong = 20, aque = 20, cats = 20, mbuk = 20, ung = 20,
+    ugg = 20, ols = 23, elp = 23, iy = 47, rg = 21, cd = 21,
+    alog = 20, fw = 21, mg = 21, mh = 21, uy = 20
 
 }
 
@@ -1893,10 +1896,27 @@ local CWAddBox = Instance.new("TextBox", CustomWordsFrame)
 CWAddBox.Font = Enum.Font.Gotham
 CWAddBox.TextSize = 12
 CWAddBox.BackgroundColor3 = THEME.ItemBG
-CWAddBox.Size = UDim2.new(0, 170, 0, 24)
+CWAddBox.Size = UDim2.new(0, 120, 0, 24)
 CWAddBox.Position = UDim2.new(0, 10, 1, -35)
 Instance.new("UICorner", CWAddBox).CornerRadius = UDim.new(0, 4)
 SetupPhantomBox(CWAddBox, "Add new word...")
+
+local CWClearBtn = Instance.new("TextButton", CustomWordsFrame)
+CWClearBtn.Text = "Clear"
+CWClearBtn.Font = Enum.Font.GothamBold
+CWClearBtn.TextSize = 11
+CWClearBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CWClearBtn.BackgroundColor3 = THEME.ItemBG
+CWClearBtn.Size = UDim2.new(0, 45, 0, 24)
+CWClearBtn.Position = UDim2.new(0, 135, 1, -35)
+Instance.new("UICorner", CWClearBtn).CornerRadius = UDim.new(0, 4)
+
+CWClearBtn.MouseButton1Click:Connect(function()
+    Config.CustomWords = {}
+    SaveConfig()
+    RefreshCustomWords()
+    ShowToast("Cleared all custom words!", "warning")
+end)
 
 local CWAddBtn = Instance.new("TextButton", CustomWordsFrame)
 CWAddBtn.Text = "Add"
@@ -2429,7 +2449,7 @@ local function FetchServers()
                             ShowToast("Teleporting...", "success")
                             
                             if queue_on_teleport then
-                                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/skrylor/Last-Letter-Script/refs/heads/main/Last%20Letter.lua"))()')
+                                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/Aaaaa"))()')
                             end
 
                             task.spawn(function()
