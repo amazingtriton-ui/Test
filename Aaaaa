@@ -194,7 +194,7 @@ local function UpdateStatus(text, color)
     game:GetService("RunService").RenderStepped:Wait()
 end
 
--local FetchedContent = nil
+local FetchedContent = nil
 
 local function FetchWords()
     UpdateStatus("Fetching latest word list...", THEME.Warning)
