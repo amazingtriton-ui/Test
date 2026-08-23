@@ -68,19 +68,24 @@ local Config = {
 
 local function SaveConfig()
     if writefile then
-        writefile(ConfigFile, HttpService:JSONEncode(Config))
+        pcall(function()
+            writefile(ConfigFile, HttpService:JSONEncode(Config))
+        end)
     end
 end
 
 local function LoadConfig()
-    if isfile and isfile(ConfigFile) then
-        local success, decoded = pcall(function() return HttpService:JSONDecode(readfile(ConfigFile)) end)
+    if isfile and pcall(function() return isfile(ConfigFile) end) then
+        local success, decoded = pcall(function() 
+            return HttpService:JSONDecode(readfile(ConfigFile)) 
+        end)
         if success and decoded then
             for k, v in pairs(decoded) do Config[k] = v end
         end
     end
 end
 LoadConfig()
+
 
 
 local currentCPM = Config.CPM
