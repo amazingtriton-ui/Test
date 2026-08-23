@@ -1900,7 +1900,6 @@ CWAddBox.Size = UDim2.new(0, 120, 0, 24)
 CWAddBox.Position = UDim2.new(0, 10, 1, -35)
 Instance.new("UICorner", CWAddBox).CornerRadius = UDim.new(0, 4)
 SetupPhantomBox(CWAddBox, "Add new word...")
-
 local CWClearBtn = Instance.new("TextButton", CustomWordsFrame)
 CWClearBtn.Text = "Clear"
 CWClearBtn.Font = Enum.Font.GothamBold
@@ -1995,6 +1994,7 @@ CWClearBtn.MouseButton1Click:Connect(function()
     ShowToast("Cleared all custom words!", "warning")
 end)
 
+CWAddBtn.MouseButton1Click:Connect(function()
     local text = CWAddBox.Text
     if text == "Add new word..." or text == "" then return end
     
@@ -2002,7 +2002,6 @@ end)
     
     local addedCount = 0
     
-    -- Loop through all words separated by spaces or commas
     for rawWord in text:gmatch("[^,%s]+") do
         local clean = rawWord:gsub("[%s%c]+", ""):lower()
         
@@ -2016,7 +2015,6 @@ end)
             end
             
             if not alreadyInCustom then
-                -- Un-blacklist if previously blacklisted
                 if Blacklist[clean] then
                     Blacklist[clean] = nil
                     for idx, bw in ipairs(Config.BlacklistedWords) do
@@ -2029,7 +2027,6 @@ end)
 
                 table.insert(Config.CustomWords, clean)
                 
-                -- Add to active dictionary/buckets if missing
                 local existsInMain = false
                 local c = clean:sub(1,1)
                 if Buckets and Buckets[c] then
@@ -2060,7 +2057,6 @@ end)
         ShowToast("No new valid words were added.", "warning")
     end
 end)
-
 
 RefreshCustomWords()
 
