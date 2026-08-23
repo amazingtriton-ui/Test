@@ -194,7 +194,8 @@ local function UpdateStatus(text, color)
     game:GetService("RunService").RenderStepped:Wait()
 end
 
--- Startup: Always fetch fresh word list
+-local FetchedContent = nil
+
 local function FetchWords()
     UpdateStatus("Fetching latest word list...", THEME.Warning)
     local success, res = pcall(function()
@@ -202,7 +203,10 @@ local function FetchWords()
     end)
     
     if success and res and res.Body then
-        writefile(fileName, res.Body)
+        FetchedContent = res.Body -- Save to memory first!
+        if writefile then
+            pcall(function() writefile(fileName, res.Body) end)
+        end
         UpdateStatus("Fetched successfully!", THEME.Success)
     else
         UpdateStatus("Fetch failed! Using cached.", Color3.fromRGB(255, 80, 80))
@@ -834,8 +838,15 @@ laryngotracheobronchitides = true,
 }
 local function LoadList(fname)
     UpdateStatus("Parsing word list...", THEME.Warning)
-    if isfile(fname) then
-        local content = readfile(fname)
+    
+    local content = FetchedContent
+    
+    -- Safe fallback for Delta just in case memory fails
+    if not content and isfile and pcall(function() return isfile(fname) end) and readfile then
+        pcall(function() content = readfile(fname) end)
+    end
+    
+    if content then
         for w in content:gmatch("[^\r\n]+") do
             local clean = w:gsub("[%s%c]+", ""):lower()
             if #clean > 0 and not SeenWords[clean] and not uselessEnglishWords[clean] then
@@ -848,6 +859,7 @@ local function LoadList(fname)
          task.wait(1)
     end
 end
+
 
 LoadList(fileName)
 
