@@ -341,7 +341,8 @@ local function Tween(obj, props, time)
     TweenService:Create(obj, TweenInfo.new(time or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
 end
 
-local function GetCurrentGameWord(providedFrame)
+
+    local function GetCurrentGameWord(providedFrame)
     local frame = providedFrame
     if not frame then
         local player = Players.LocalPlayer
@@ -363,22 +364,34 @@ local function GetCurrentGameWord(providedFrame)
         if c:IsA("GuiObject") and c.Visible then
             local txt = c:FindFirstChild("Letter")
             if txt and txt:IsA("TextLabel") and txt.TextTransparency < 1 then
+                -- FIX: Safely get X position
+                local xPos = 0
+                local success, result = pcall(function()
+                    return c.AbsolutePosition.X
+                end)
+                if success and result then
+                    xPos = result
+                end
+                
                 table.insert(letterData, {
                     Obj = c,
                     Txt = txt,
-                    X = c.AbsolutePosition.X,
+                    X = xPos,
                     Id = tonumber(c.Name) or 0
                 })
             end
         end
     end
     
-    table.sort(letterData, function(a,b)
-        if math.abs(a.X - b.X) > 2 then
-            return a.X < b.X
-        end
-        return a.Id < b.Id
-    end)
+    -- Only sort if we have data
+    if #letterData > 0 then
+        table.sort(letterData, function(a,b)
+            if math.abs(a.X - b.X) > 2 then
+                return a.X < b.X
+            end
+            return a.Id < b.Id
+        end)
+    end
 
     for _, data in ipairs(letterData) do
         local t = tostring(data.Txt.Text)
@@ -388,7 +401,6 @@ local function GetCurrentGameWord(providedFrame)
     
     return detected:lower():gsub(" ", ""), censored
 end
-
 local function GetTurnInfo(providedFrame)
     if isMyTurnLogDetected then
         if tick() < turnExpiryTime then
