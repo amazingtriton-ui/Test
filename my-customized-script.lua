@@ -20,7 +20,7 @@ local request = (syn and syn.request) or (http and http.request) or http_request
 local TOGGLE_KEY = Enum.KeyCode.RightControl
 local MIN_CPM = 50
 local MAX_CPM_LEGIT = 1500
-local MAX_CPM_BLATANT = 3000
+local MAX_CPM_BLATANT = 999999
 
 math.randomseed(os.time())
 
@@ -62,7 +62,7 @@ local Config = {
     RiskyMistakes = false,
     CustomWords = {},
     MinTypeSpeed = 50,
-    MaxTypeSpeed = 3000,
+    MaxTypeSpeed = 999999,
     KeyboardLayout = "QWERTY"
 }
 
@@ -143,7 +143,7 @@ logConn = LogService.MessageOut:Connect(function(message, type)
     end
 end)
 
-local url = "https://raw.githubusercontent.com/skrylor/english-words/refs/heads/main/merged_english.txt"
+local url = "https://raw.githubusercontent.com/amazingtriton-ui/aAaaaaAaAAAA-AAAAUBBVFFIBVRFVNRFINV/refs/heads/main/duplicate-lines-result.txt"
 local fileName = "ultimate_words_v4.txt"
 
 -- Temporary Loading UI
