@@ -21,7 +21,7 @@ local request = (syn and syn.request) or (http and http.request) or http_request
 local TOGGLE_KEY = Enum.KeyCode.RightControl
 local MIN_CPM = 50
 local MAX_CPM_LEGIT = 1500
-local MAX_CPM_BLATANT = 3000
+local MAX_CPM_BLATANT = 100000
 
 math.randomseed(os.time())
 
@@ -1829,7 +1829,7 @@ local function FetchServers()
                             ShowToast("Teleporting...", "success")
                             
                             if queue_on_teleport then
-                                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/amazingtriton-ui/aAaaaaAaAAAA-AAAAUBBVFFIBVRFVNRFINV/refs/heads/main/Last%20Letter.lua"))()')
+                                queue_on_teleport('loadstring(game:HttpGet("https://raw.githubusercontent.com/amazingtriton-ui/Test/refs/heads/main/Aaaaa"))()')
                             end
 
                             task.spawn(function()
