@@ -98,7 +98,7 @@ local request = (syn and syn.request) or (http and http.request) or http_request
 local TOGGLE_KEY = Enum.KeyCode.RightControl
 local MIN_CPM = 50
 local MAX_CPM_LEGIT = 1500
-local MAX_CPM_BLATANT = 3000
+local MAX_CPM_BLATANT = 1000000
 
 math.randomseed(os.time())
 
@@ -247,7 +247,7 @@ LStroke.Thickness = 2
 local LoadingTitle = Instance.new("TextLabel", LoadingFrame)
 LoadingTitle.Size = UDim2.new(1, 0, 0, 40)
 LoadingTitle.BackgroundTransparency = 1
-LoadingTitle.Text = "WordHelper V4"
+LoadingTitle.Text = "WordHelper V5"
 LoadingTitle.TextColor3 = THEME.Accent
 LoadingTitle.Font = Enum.Font.GothamBold
 LoadingTitle.TextSize = 18
@@ -2984,7 +2984,8 @@ runConn = RunService.RenderStepped:Connect(function()
                 Tween(StatusDot, {BackgroundColor3 = THEME.Warning})
                 
                 for _, btn in ipairs(ButtonCache) do btn.Visible = false end
-                StatsData.Count.Text = "Words: 0"
+StatsData.Count.Text = "Words: 0"
+TopWordsBtn.Visible = false
             end
             
             listUpdatePending = false
@@ -3003,7 +3004,12 @@ runConn = RunService.RenderStepped:Connect(function()
                 if b.Visible then visCount = visCount + 1 end
             end
             StatsData.Count.Text = "Words: " .. visCount .. "+"
-        end
+        
+if SearchBox and SearchBox.Text ~= "" then
+    TopWordsBtn.Visible = true
+else
+    TopWordsBtn.Visible = false
+end
 
         if not isVisible then
             if StatusText.Text ~= "Not in Round" then
