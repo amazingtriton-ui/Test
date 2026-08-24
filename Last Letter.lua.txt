@@ -1,3 +1,81 @@
+-- Mobile support
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+-- Enhanced typing for mobile
+local function SimulateKeyMobile(input)
+    if isMobile then
+        local key
+        if typeof(input) == "string" and #input == 1 then
+            pcall(function() key = Enum.KeyCode[input:upper()] end)
+        else
+            key = input
+        end
+        
+        if key then
+            pcall(function()
+                VirtualInputManager:SendKeyEvent(true, key, false, game)
+                task.wait(0.02)
+                VirtualInputManager:SendKeyEvent(false, key, false, game)
+            end)
+        end
+    end
+end
+
+-- Modify the SimulateKey function to use mobile support
+-- Replace the existing SimulateKey function with:
+local function SimulateKey(input)
+    if isMobile then
+        SimulateKeyMobile(input)
+        return
+    end
+    
+    if typeof(input) == "string" and #input == 1 then
+         local char = input
+         local vimSuccess = pcall(function()
+             VirtualInputManager:SendTextInput(char)
+         end)
+         
+         if not vimSuccess then
+             local key
+             pcall(function() key = GetKeyCode(input) end)
+             if not key then pcall(function() key = Enum.KeyCode[input:upper()] end) end
+             
+             if key then
+                 pcall(function()
+                     VirtualInputManager:SendKeyEvent(true, key, false, game)
+                     task.wait(0.01)
+                     VirtualInputManager:SendKeyEvent(false, key, false, game)
+                 end)
+             end
+         end
+         return
+    end
+
+    local key
+    if typeof(input) == "EnumItem" then
+        key = input
+    else
+        pcall(function() key = Enum.KeyCode[input:upper()] end)
+    end
+
+    if key then
+        local baseHold = math.clamp(12 / currentCPM, 0.015, 0.05)
+        local hold = isBlatant and 0.002 or (baseHold + (math.random() * 0.01) - 0.005)
+
+        local vimSuccess = pcall(function()
+            VirtualInputManager:SendKeyEvent(true, key, false, game)
+            task.wait(hold)
+            VirtualInputManager:SendKeyEvent(false, key, false, game)
+        end)
+
+        if not vimSuccess then
+            pcall(function()
+                VirtualUser:TypeKey(key)
+            end)
+        end
+    end
+end
+
 local HttpService = game:GetService("HttpService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -94,6 +172,7 @@ local autoJoin = Config.AutoJoin
 local panicMode = Config.PanicMode
 local showKeyboard = Config.ShowKeyboard
 local errorRate = Config.ErrorRate
+HardLetterCombos = {}
 local thinkDelayCurrent = Config.ThinkDelay
 local riskyMistakes = Config.RiskyMistakes
 local keyboardLayout = Config.KeyboardLayout or "QWERTY"
@@ -143,7 +222,7 @@ logConn = LogService.MessageOut:Connect(function(message, type)
     end
 end)
 
-local url = "https://raw.githubusercontent.com/skrylor/english-words/refs/heads/main/merged_english.txt"
+local url = "https://raw.githubusercontent.com/amazingtriton-ui/aAaaaaAaAAAA-AAAAUBBVFFIBVRFVNRFINV/refs/heads/main/duplicate-lines-result.txt"
 local fileName = "ultimate_words_v4.txt"
 
 -- Temporary Loading UI
@@ -1103,6 +1182,78 @@ ManageWordsBtn.Size = UDim2.new(0, 130, 0, 24)
 ManageWordsBtn.Position = UDim2.new(0, 15, 0, 145)
 Instance.new("UICorner", ManageWordsBtn).CornerRadius = UDim.new(0, 4)
 
+local HardComboFrame = Instance.new("Frame", TogglesFrame)
+HardComboFrame.Size = UDim2.new(1, 0, 0, 30)
+HardComboFrame.Position = UDim2.new(0, 0, 0, 210)
+HardComboFrame.BackgroundTransparency = 1
+
+local HardComboLabel = Instance.new("TextLabel", HardComboFrame)
+HardComboLabel.Text = "Hard Combos:"
+HardComboLabel.Font = Enum.Font.GothamMedium
+HardComboLabel.TextSize = 11
+HardComboLabel.TextColor3 = THEME.SubText
+HardComboLabel.Size = UDim2.new(0, 80, 0, 20)
+HardComboLabel.Position = UDim2.new(0, 15, 0, 0)
+HardComboLabel.BackgroundTransparency = 1
+HardComboLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+local HardComboBox = Instance.new("TextBox", HardComboFrame)
+HardComboBox.Font = Enum.Font.Gotham
+HardComboBox.TextSize = 12
+HardComboBox.BackgroundColor3 = THEME.Background
+HardComboBox.Size = UDim2.new(0, 180, 0, 20)
+HardComboBox.Position = UDim2.new(0, 100, 0, 0)
+Instance.new("UICorner", HardComboBox).CornerRadius = UDim.new(0, 4)
+SetupPhantomBox(HardComboBox, "x:10, z:9...")
+
+local HardComboApply = Instance.new("TextButton", HardComboFrame)
+HardComboApply.Text = "Apply"
+HardComboApply.Font = Enum.Font.GothamBold
+HardComboApply.TextSize = 11
+HardComboApply.TextColor3 = THEME.Accent
+HardComboApply.BackgroundColor3 = THEME.Background
+HardComboApply.Size = UDim2.new(0, 45, 0, 20)
+HardComboApply.Position = UDim2.new(1, -55, 0, 0)
+Instance.new("UICorner", HardComboApply).CornerRadius = UDim.new(0, 4)
+
+HardComboApply.MouseButton1Click:Connect(function()
+    local text = HardComboBox.Text
+    if text == "x:10, z:9..." then return end
+    
+    local combos = {}
+    for entry in text:gmatch("[^,]+") do
+        local combo, score = entry:match("([%w]+)%s*:%s*(%d+)")
+        if combo and score then
+            combo = combo:lower()
+            local scoreNum = tonumber(score)
+            if scoreNum and #combo <= 4 and #combo >= 1 then
+                for i = 1, #combo do
+                    local c = combo:sub(i, i)
+                    combos[c] = scoreNum
+                end
+            end
+        end
+    end
+    
+    -- Update HardLetterScores
+    for k, v in pairs(combos) do
+        HardLetterScores[k] = v
+    end
+    
+    Config.HardLetterCombos = combos
+    SaveConfig()
+    ShowToast("Hard combos updated!", "success")
+    HardComboBox.Text = ""
+    HardComboBox:ReleaseFocus()
+end)
+
+-- Load saved combos
+if Config.HardLetterCombos then
+    for k, v in pairs(Config.HardLetterCombos) do
+        HardLetterScores[k] = v
+    end
+end
+
 local WordBrowserBtn = Instance.new("TextButton", TogglesFrame)
 WordBrowserBtn.Text = "Word Browser"
 WordBrowserBtn.Font = Enum.Font.GothamMedium
@@ -1289,18 +1440,147 @@ CWAddBtn.MouseButton1Click:Connect(function()
     local text = CWAddBox.Text
     if text == "Add new word..." then return end
     
-    text = text:gsub("[%s%c]+", ""):lower()
-    if #text < 2 then return end
-    
-    if not Config.CustomWords then Config.CustomWords = {} end
-    
-    for _, w in ipairs(Config.CustomWords) do
-        if w == text then
-            ShowToast("Word already in custom list!", "warning")
-            return
+    -- Split by comma or space
+    local words = {}
+    for w in text:gmatch("[^,%s]+") do
+        local clean = w:gsub("[%s%c]+", ""):lower()
+        if #clean >= 2 then
+            table.insert(words, clean)
         end
     end
     
+    if #words == 0 then
+        ShowToast("No valid words to add!", "warning")
+        return
+    end
+    
+    local added = {}
+    local skipped = {}
+    
+    for _, word in ipairs(words) do
+        if not Config.CustomWords then Config.CustomWords = {} end
+        
+        local exists = false
+        for _, w in ipairs(Config.CustomWords) do
+            if w == word then
+                exists = true
+                break
+            end
+        end
+        
+        if exists then
+            table.insert(skipped, word)
+        else
+            -- Check if in main list
+            local existsInMain = false
+            local c = word:sub(1,1)
+            if Buckets and Buckets[c] then
+                for _, w in ipairs(Buckets[c]) do
+                    if w == word then
+                        existsInMain = true
+                        break
+                    end
+                end
+            end
+            
+            if existsInMain then
+                table.insert(skipped, word)
+            else
+                table.insert(Config.CustomWords, word)
+                table.insert(added, word)
+                table.insert(Words, word)
+                if c == "" then c = "#" end
+                Buckets[c] = Buckets[c] or {}
+                table.insert(Buckets[c], word)
+            end
+        end
+    end
+    
+    SaveConfig()
+    CWAddBox.Text = ""
+    CWAddBox:ReleaseFocus()
+    RefreshCustomWords()
+    
+    if #added > 0 then
+        ShowToast("Added " .. #added .. " words!", "success")
+    end
+    if #skipped > 0 then
+        ShowToast("Skipped " .. #skipped .. " words (duplicates or in main list)", "warning")
+    end
+end)
+-- Clear custom words command
+local CWClearBtn = Instance.new("TextButton", CustomWordsFrame)
+CWClearBtn.Text = "Clear All"
+CWClearBtn.Font = Enum.Font.GothamBold
+CWClearBtn.TextSize = 11
+CWClearBtn.TextColor3 = Color3.fromRGB(255, 80, 80)
+CWClearBtn.BackgroundColor3 = THEME.ItemBG
+CWClearBtn.Size = UDim2.new(0, 70, 0, 24)
+CWClearBtn.Position = UDim2.new(1, -135, 1, -35)
+Instance.new("UICorner", CWClearBtn).CornerRadius = UDim.new(0, 4)
+
+CWClearBtn.MouseButton1Click:Connect(function()
+    if #(Config.CustomWords or {}) == 0 then
+        ShowToast("Custom word list is already empty!", "warning")
+        return
+    end
+    
+    Config.CustomWords = {}
+    SaveConfig()
+    RefreshCustomWords()
+    ShowToast("Cleared all custom words!", "success")
+end)
+
+-- Remove duplicates button
+local CWRemoveDupeBtn = Instance.new("TextButton", CustomWordsFrame)
+CWRemoveDupeBtn.Text = "Remove Dupes"
+CWRemoveDupeBtn.Font = Enum.Font.GothamBold
+CWRemoveDupeBtn.TextSize = 11
+CWRemoveDupeBtn.TextColor3 = THEME.Success
+CWRemoveDupeBtn.BackgroundColor3 = THEME.ItemBG
+CWRemoveDupeBtn.Size = UDim2.new(0, 90, 0, 24)
+CWRemoveDupeBtn.Position = UDim2.new(1, -60, 1, -35)
+Instance.new("UICorner", CWRemoveDupeBtn).CornerRadius = UDim.new(0, 4)
+
+CWRemoveDupeBtn.MouseButton1Click:Connect(function()
+    if not Config.CustomWords or #Config.CustomWords == 0 then
+        ShowToast("No custom words to check!", "warning")
+        return
+    end
+    
+    local removed = {}
+    local newList = {}
+    
+    for _, word in ipairs(Config.CustomWords) do
+        local existsInMain = false
+        local c = word:sub(1,1)
+        if Buckets and Buckets[c] then
+            for _, w in ipairs(Buckets[c]) do
+                if w == word then
+                    existsInMain = true
+                    break
+                end
+            end
+        end
+        
+        if existsInMain then
+            table.insert(removed, word)
+        else
+            table.insert(newList, word)
+        end
+    end
+    
+    Config.CustomWords = newList
+    SaveConfig()
+    RefreshCustomWords()
+    
+    if #removed > 0 then
+        ShowToast("Removed " .. #removed .. " duplicates from main word list!", "success")
+    else
+        ShowToast("No duplicates found!", "warning")
+    end
+end)
+
     local existsInMain = false
     local c = text:sub(1,1)
     if Buckets and Buckets[c] then
