@@ -2227,76 +2227,69 @@ UpdateList = function(detectedText, requiredLetter)
     else
         bucket = Words
     end
-    
+          
     local function CollectMatches(prefix, tryFallbackLengths)
-        local exacts = {}
-        local fallbackExacts = {}
-        local partials = {}
-        local maxPartialLen = 0
-        local limit = 100
-        
-        if bucket then
-            local checkWord = function(w)
-                if Blacklist[w] or UsedWords[w] then return end
-                
-                -- Check for main list filtering (suffix/length)
-                if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
-                
-                local isLengthMatch = true
-                if not tryFallbackLengths and lengthMode > 0 then
-                    isLengthMatch = (#w == lengthMode)
-                elseif tryFallbackLengths and lengthMode > 0 then
-                     isLengthMatch = true
-                end
-                
-                if not isLengthMatch then return end
-
-                local mLen = GetMatchLength(w, prefix)
-                if mLen == #prefix then
-                    table.insert(exacts, w)
-                elseif #exacts == 0 then
-                    if mLen > maxPartialLen then
-                        maxPartialLen = mLen
-                        partials = {w}
-                    elseif mLen == maxPartialLen and mLen > 0 then
-                        if #partials < 50 then table.insert(partials, w) end
-                    end
-                end
-            end
-
-            local useBinary = true
-            if prefix:find("#") or prefix:find("%*") then useBinary = false end
+    local exacts = {}
+    local fallbackExacts = {}
+    local partials = {}
+    local maxPartialLen = 0
+    
+    if bucket then
+        local checkWord = function(w)
+            if Blacklist[w] or UsedWords[w] then return end
             
-            if useBinary and #prefix > 0 then
-                local startIndex = BinarySearchStart(bucket, prefix)
-                
-                if startIndex ~= -1 then
-                    local count = 0
-                    for i = startIndex, #bucket do
-                        local w = bucket[i]
-                        
-                        if w:sub(1, #prefix) ~= prefix then break end
-                        
-                        checkWord(w)
-                        
-                        count = count + 1
-                        if count >= 3000 then break end
-                    end
-                end
-            else
-                local searchLimit = (sortMode == "Random") and 1000 or limit
-                for _, w in ipairs(bucket) do
-                    checkWord(w)
-                    if #exacts >= searchLimit then break end
-                end
+            -- Check for main list filtering (suffix/length)
+            if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
+            
+            local isLengthMatch = true
+            if not tryFallbackLengths and lengthMode > 0 then
+                isLengthMatch = (#w == lengthMode)
+            elseif tryFallbackLengths and lengthMode > 0 then
+                 isLengthMatch = true
             end
             
-            if sortMode == "Random" and #exacts > 0 then
-                shuffleTable(exacts)
+            if not isLengthMatch then return end
+
+            local mLen = GetMatchLength(w, prefix)
+            if mLen == #prefix then
+                table.insert(exacts, w)
+            elseif #exacts == 0 then
+                if mLen > maxPartialLen then
+                    maxPartialLen = mLen
+                    partials = {w}
+                elseif mLen == maxPartialLen and mLen > 0 then
+                    if #partials < 50 then table.insert(partials, w) end
+                end
             end
         end
-        return exacts, partials, maxPartialLen
+
+        local useBinary = true
+        if prefix:find("#") or prefix:find("%*") then useBinary = false end
+        
+        if useBinary and #prefix > 0 then
+            local startIndex = BinarySearchStart(bucket, prefix)
+            
+            if startIndex ~= -1 then
+                for i = startIndex, #bucket do
+                    local w = bucket[i]
+                    
+                    if w:sub(1, #prefix) ~= prefix then break end
+                    
+                    checkWord(w)
+                end
+            end
+        else
+            for _, w in ipairs(bucket) do
+                checkWord(w)
+            end
+        end
+        
+        if sortMode == "Random" and #exacts > 0 then
+            shuffleTable(exacts)
+        end
     end
+    return exacts, partials, maxPartialLen
+end
 
     local exacts, partials, pLen = CollectMatches(searchPrefix, false)
 
