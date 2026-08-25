@@ -1373,7 +1373,7 @@ end)
 RefreshCustomWords()
 
 local function ProcessCustomWordCommand(input)
-    if not input or input == "" then return end
+    if not input or input == "" then return false end
     
     local text = input:gsub("[%s%c]+", " "):gsub("^%s+", ""):gsub("%s+$", "")
     
@@ -1388,13 +1388,18 @@ local function ProcessCustomWordCommand(input)
         return true
     end
     
-    -- Check for rd command (remove duplicates)
+    -- MERGED: Check for rd command (remove duplicates AND words in main dictionary)
     if text:lower() == "rd" then
         if not Config.CustomWords or #Config.CustomWords == 0 then
-            ShowToast("No custom words to deduplicate!", "warning")
+            ShowToast("No custom words to clean!", "warning")
             return true
         end
         
+        local totalRemoved = 0
+        local duplicateWords = {}
+        local mainDictWords = {}
+        
+        -- Step 1: Remove duplicates within custom list
         local seen = {}
         local unique = {}
         local duplicates = 0
@@ -1407,39 +1412,61 @@ local function ProcessCustomWordCommand(input)
                     table.insert(unique, w)
                 else
                     duplicates = duplicates + 1
+                    table.insert(duplicateWords, w)
                 end
             end
         end
         
         Config.CustomWords = unique
-        SaveConfig()
-        RefreshCustomWords()
-        ShowToast("Removed " .. duplicates .. " duplicate words!", "success")
-        CWAddBox.Text = ""
-        CWAddBox:ReleaseFocus()
-        return true
-    end
-    
-    -- Check for r command (remove single word)
-    if text:lower():match("^r%s+") then
-        local wordToRemove = text:sub(3):gsub("^%s+", ""):gsub("%s+$", ""):lower()
-        if wordToRemove == "" then return true end
         
-        local found = false
-        for i = #Config.CustomWords, 1, -1 do
-            if Config.CustomWords[i]:lower() == wordToRemove then
-                table.remove(Config.CustomWords, i)
-                found = true
+        -- Step 2: Remove words that exist in main dictionary
+        local kept = {}
+        local mainDictFound = {}
+        
+        for _, w in ipairs(Config.CustomWords) do
+            local existsInMain = false
+            local c = w:sub(1,1)
+            
+            if c ~= "" and Buckets and Buckets[c] then
+                for _, mainWord in ipairs(Buckets[c]) do
+                    if mainWord == w then
+                        existsInMain = true
+                        break
+                    end
+                end
+            end
+            
+            if existsInMain then
+                table.insert(mainDictFound, w)
+            else
+                table.insert(kept, w)
             end
         end
         
-        if found then
-            SaveConfig()
-            RefreshCustomWords()
-            ShowToast("Removed: " .. wordToRemove, "warning")
+        Config.CustomWords = kept
+        totalRemoved = duplicates + #mainDictFound
+        
+        -- Save and refresh
+        SaveConfig()
+        RefreshCustomWords()
+        
+        -- Build feedback message
+        local msg = ""
+        if totalRemoved > 0 then
+            msg = "Cleaned " .. totalRemoved .. " words! "
+            
+            if duplicates > 0 and #mainDictFound > 0 then
+                msg = msg .. "Removed " .. duplicates .. " duplicates and " .. #mainDictFound .. " words from main dictionary."
+            elseif duplicates > 0 then
+                msg = msg .. "Removed " .. duplicates .. " duplicate words."
+            elseif #mainDictFound > 0 then
+                msg = msg .. "Removed " .. #mainDictFound .. " words that exist in main dictionary: " .. table.concat(mainDictFound, ", ")
+            end
         else
-            ShowToast("Word not found: " .. wordToRemove, "error")
+            msg = "No duplicates or main dictionary words found! Your custom list is clean."
         end
+        
+        ShowToast(msg, totalRemoved > 0 and "warning" or "success")
         
         CWAddBox.Text = ""
         CWAddBox:ReleaseFocus()
@@ -1447,7 +1474,7 @@ local function ProcessCustomWordCommand(input)
     end
     
     -- Check for bulk remove (starts with "r " and has commas)
-    if text:lower():match("^r%s+") then
+    if text:lower():match("^r%s+") and text:find(",") then
         local rest = text:sub(3):gsub("^%s+", ""):gsub("%s+$", "")
         if rest == "" then return true end
         
@@ -1477,6 +1504,32 @@ local function ProcessCustomWordCommand(input)
             ShowToast("Removed: " .. table.concat(removed, ", "), "warning")
         else
             ShowToast("No matching words found!", "error")
+        end
+        
+        CWAddBox.Text = ""
+        CWAddBox:ReleaseFocus()
+        return true
+    end
+    
+    -- Check for r command (remove single word)
+    if text:lower():match("^r%s+") then
+        local wordToRemove = text:sub(3):gsub("^%s+", ""):gsub("%s+$", ""):lower()
+        if wordToRemove == "" then return true end
+        
+        local found = false
+        for i = #Config.CustomWords, 1, -1 do
+            if Config.CustomWords[i]:lower() == wordToRemove then
+                table.remove(Config.CustomWords, i)
+                found = true
+            end
+        end
+        
+        if found then
+            SaveConfig()
+            RefreshCustomWords()
+            ShowToast("Removed: " .. wordToRemove, "warning")
+        else
+            ShowToast("Word not found: " .. wordToRemove, "error")
         end
         
         CWAddBox.Text = ""
