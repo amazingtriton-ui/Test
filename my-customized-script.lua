@@ -1174,7 +1174,41 @@ CWCloseBtn.Position = UDim2.new(1, -30, 0, 2)
 CWCloseBtn.BackgroundTransparency = 1
 CWCloseBtn.MouseButton1Click:Connect(function() CustomWordsFrame.Visible = false end)
 
-ManageWordsBtn.MouseButton1Click:Connect(function()
+
+
+
+    
+    
+    
+    
+
+
+
+    
+    
+        
+        
+            
+            
+        
+        
+        
+        
+        
+    
+    
+        
+        
+    
+    -
+        
+        
+    
+    
+        
+            
+            
+        ManageWordsBtn.MouseButton1Click:Connect(function()
     CustomWordsFrame.Visible = not CustomWordsFrame.Visible
     CustomWordsFrame.Parent = nil
     CustomWordsFrame.Parent = ScreenGui
@@ -1239,6 +1273,7 @@ CWAddBtn.Size = UDim2.new(0, 50, 0, 24)
 CWAddBtn.Position = UDim2.new(1, -60, 1, -35)
 Instance.new("UICorner", CWAddBtn).CornerRadius = UDim.new(0, 4)
 
+-- REFRESH FUNCTION
 local function RefreshCustomWords()
     for _, c in ipairs(CWScroll:GetChildren()) do
         if c:IsA("Frame") then c:Destroy() end
@@ -1279,8 +1314,6 @@ local function RefreshCustomWords()
             lbl.BackgroundTransparency = 1
             lbl.TextXAlignment = Enum.TextXAlignment.Left
 
-            -- Removed nested invisible button to fix click handling
-            
             local del = Instance.new("TextButton", row)
             del.Text = "X"
             del.Font = Enum.Font.GothamBold
@@ -1302,82 +1335,13 @@ local function RefreshCustomWords()
     CWScroll.CanvasSize = UDim2.new(0, 0, 0, shownCount * 24)
 end
 
-CWSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshCustomWords)
-
-CWAddBtn.MouseButton1Click:Connect(function()
-    local text = CWAddBox.Text
-    if text == "Add new word..." or text == "" then return end
-    
-    -- Try to process as command
-    if ProcessCustomWordCommand(text) then
-        return
-    end
-    
-    -- Single word add (original behavior)
-    text = text:gsub("[%s%c]+", ""):lower()
-    if #text < 2 then
-        ShowToast("Word too short!", "warning")
-        return
-    end
-    
-    if not Config.CustomWords then Config.CustomWords = {} end
-    
-    for _, w in ipairs(Config.CustomWords) do
-        if w == text then
-            ShowToast("Word already in custom list!", "warning")
-            CWAddBox.Text = ""
-            CWAddBox:ReleaseFocus()
-            return
-        end
-    end
-    
-    local existsInMain = false
-    local c = text:sub(1,1)
-    if c ~= "" and Buckets and Buckets[c] then
-        for _, w in ipairs(Buckets[c]) do
-            if w == text then existsInMain = true break end
-        end
-    end
-    
-    if existsInMain then
-         ShowToast("Word already in main dictionary!", "error")
-         CWAddBox.Text = ""
-         CWAddBox:ReleaseFocus()
-         return
-    end
-
-    table.insert(Config.CustomWords, text)
-    SaveConfig()
-    
-    table.insert(Words, text)
-    if c == "" then c = "#" end
-    Buckets[c] = Buckets[c] or {}
-    table.insert(Buckets[c], text)
-    
-    CWAddBox.Text = ""
-    CWAddBox:ReleaseFocus()
-    RefreshCustomWords()
-    ShowToast("Added custom word: " .. text, "success")
-end)
-
-CWAddBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local text = CWAddBox.Text
-        if text and text ~= "" and text ~= "Add new word..." then
-            CWAddBtn.MouseButton1Click:Fire()
-        end
-    end
-end)
-
-
-RefreshCustomWords()
-
+-- COMMAND PROCESSING FUNCTION
 local function ProcessCustomWordCommand(input)
     if not input or input == "" then return false end
     
     local text = input:gsub("[%s%c]+", " "):gsub("^%s+", ""):gsub("%s+$", "")
     
-    -- Check for ct command (clear table)
+    -- COMMAND 1: ct - Clear Table
     if text:lower() == "ct" then
         Config.CustomWords = {}
         SaveConfig()
@@ -1388,7 +1352,7 @@ local function ProcessCustomWordCommand(input)
         return true
     end
     
-    -- MERGED: Check for rd command (remove duplicates AND words in main dictionary)
+    -- COMMAND 2: rd - Remove Duplicates AND Main Dictionary Words (MERGED)
     if text:lower() == "rd" then
         if not Config.CustomWords or #Config.CustomWords == 0 then
             ShowToast("No custom words to clean!", "warning")
@@ -1446,34 +1410,30 @@ local function ProcessCustomWordCommand(input)
         Config.CustomWords = kept
         totalRemoved = duplicates + #mainDictFound
         
-        -- Save and refresh
         SaveConfig()
         RefreshCustomWords()
         
-        -- Build feedback message
         local msg = ""
         if totalRemoved > 0 then
             msg = "Cleaned " .. totalRemoved .. " words! "
-            
             if duplicates > 0 and #mainDictFound > 0 then
                 msg = msg .. "Removed " .. duplicates .. " duplicates and " .. #mainDictFound .. " words from main dictionary."
             elseif duplicates > 0 then
                 msg = msg .. "Removed " .. duplicates .. " duplicate words."
             elseif #mainDictFound > 0 then
-                msg = msg .. "Removed " .. #mainDictFound .. " words that exist in main dictionary: " .. table.concat(mainDictFound, ", ")
+                msg = msg .. "Removed " .. #mainDictFound .. " words that exist in main dictionary."
             end
         else
             msg = "No duplicates or main dictionary words found! Your custom list is clean."
         end
         
         ShowToast(msg, totalRemoved > 0 and "warning" or "success")
-        
         CWAddBox.Text = ""
         CWAddBox:ReleaseFocus()
         return true
     end
     
-    -- Check for bulk remove (starts with "r " and has commas)
+    -- COMMAND 3: r word1, word2 - Bulk Remove
     if text:lower():match("^r%s+") and text:find(",") then
         local rest = text:sub(3):gsub("^%s+", ""):gsub("%s+$", "")
         if rest == "" then return true end
@@ -1511,7 +1471,7 @@ local function ProcessCustomWordCommand(input)
         return true
     end
     
-    -- Check for r command (remove single word)
+    -- COMMAND 4: r word - Single Remove
     if text:lower():match("^r%s+") then
         local wordToRemove = text:sub(3):gsub("^%s+", ""):gsub("%s+$", ""):lower()
         if wordToRemove == "" then return true end
@@ -1537,7 +1497,7 @@ local function ProcessCustomWordCommand(input)
         return true
     end
     
-    -- Bulk add (multiple words separated by commas)
+    -- COMMAND 5: word1, word2 - Bulk Add
     if text:find(",") then
         local words = {}
         for word in text:gmatch("[^,%s]+") do
@@ -1564,7 +1524,6 @@ local function ProcessCustomWordCommand(input)
             end
             
             if not exists then
-                -- Check if it exists in main dictionary
                 local existsInMain = false
                 local c = word:sub(1,1)
                 if c ~= "" and Buckets and Buckets[c] then
@@ -1580,7 +1539,6 @@ local function ProcessCustomWordCommand(input)
                     table.insert(Config.CustomWords, word)
                     table.insert(added, word)
                     
-                    -- Add to main words list and buckets
                     table.insert(Words, word)
                     if c == "" then c = "#" end
                     Buckets[c] = Buckets[c] or {}
@@ -1613,6 +1571,78 @@ local function ProcessCustomWordCommand(input)
     return false
 end
 
+-- EVENT CONNECTIONS
+CWSearchBox:GetPropertyChangedSignal("Text"):Connect(RefreshCustomWords)
+
+-- ADD BUTTON
+CWAddBtn.MouseButton1Click:Connect(function()
+    local text = CWAddBox.Text
+    if text == "Add new word..." or text == "" then return end
+    
+    -- Try to process as command
+    if ProcessCustomWordCommand(text) then
+        return
+    end
+    
+    -- Single word add (original behavior)
+    text = text:gsub("[%s%c]+", ""):lower()
+    if #text < 2 then
+        ShowToast("Word too short!", "warning")
+        return
+    end
+    
+    if not Config.CustomWords then Config.CustomWords = {} end
+    
+    for _, w in ipairs(Config.CustomWords) do
+        if w == text then
+            ShowToast("Word already in custom list!", "warning")
+            CWAddBox.Text = ""
+            CWAddBox:ReleaseFocus()
+            return
+        end
+    end
+    
+    local existsInMain = false
+    local c = text:sub(1,1)
+    if c ~= "" and Buckets and Buckets[c] then
+        for _, w in ipairs(Buckets[c]) do
+            if w == text then existsInMain = true break end
+        end
+    end
+    
+    if existsInMain then
+         ShowToast("Word already in main dictionary!", "error")
+         CWAddBox.Text = ""
+         CWAddBox:ReleaseFocus()
+         return
+    end
+
+    table.insert(Config.CustomWords, text)
+    SaveConfig()
+    
+    table.insert(Words, text)
+    if c == "" then c = "#" end
+    Buckets[c] = Buckets[c] or {}
+    table.insert(Buckets[c], text)
+    
+    CWAddBox.Text = ""
+    CWAddBox:ReleaseFocus()
+    RefreshCustomWords()
+    ShowToast("Added custom word: " .. text, "success")
+end)
+
+-- ENTER KEY SUPPORT
+CWAddBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local text = CWAddBox.Text
+        if text and text ~= "" and text ~= "Add new word..." then
+            CWAddBtn.MouseButton1Click:Fire()
+        end
+    end
+end)
+
+-- INITIAL REFRESH
+RefreshCustomWords()
 local ServerFrame = Instance.new("Frame", ScreenGui)
 ServerFrame.Name = "ServerBrowser"
 ServerFrame.Size = UDim2.new(0, 350, 0, 400)
