@@ -1174,41 +1174,7 @@ CWCloseBtn.Position = UDim2.new(1, -30, 0, 2)
 CWCloseBtn.BackgroundTransparency = 1
 CWCloseBtn.MouseButton1Click:Connect(function() CustomWordsFrame.Visible = false end)
 
-
-
-
-    
-    
-    
-    
-
-
-
-    
-    
-        
-        
-            
-            
-        
-        
-        
-        
-        
-    
-    
-        
-        
-    
-    -
-        
-        
-    
-    
-        
-            
-            
-        ManageWordsBtn.MouseButton1Click:Connect(function()
+ManageWordsBtn.MouseButton1Click:Connect(function()
     CustomWordsFrame.Visible = not CustomWordsFrame.Visible
     CustomWordsFrame.Parent = nil
     CustomWordsFrame.Parent = ScreenGui
@@ -1643,6 +1609,7 @@ end)
 
 -- INITIAL REFRESH
 RefreshCustomWords()
+
 local ServerFrame = Instance.new("Frame", ScreenGui)
 ServerFrame.Name = "ServerBrowser"
 ServerFrame.Size = UDim2.new(0, 350, 0, 400)
