@@ -267,14 +267,33 @@ local function shuffleTable(t)
 end
 
 local HardLetterScores = {
+    -- Original single letters
     x = 10, z = 9, q = 9, j = 8, v = 6, k = 5, b = 4, f = 3, w = 3,
-    y = 2, g = 2, p = 2
+    y = 2, g = 2, p = 2,
+    
+    -- New multi-letter combinations
+    pf = 21, fd = 21, hm = 21, mh = 21, dm = 21, md = 21, sf = 21,
+    sd = 21, tp = 21, pk = 21, bk = 21, yc = 21, yg = 21, yp = 21,
+    nh = 21, ipa = 20, aque = 20, epia = 20, zy = 21, vy = 21,
+    gly = 20, mg = 21, nk = 21, dc = 21, bt = 21, hd = 21, dh = 21,
+    dhu = 21, hl = 21, lh = 21, dz = 21, lw = 21, fc = 21, ving = 21,
+    kt = 21, sz = 21, ez = 21, tx = 21, sb = 21, dae = 21, aly = 20,
+    ness = 19, ous = 19, ary = 20, nz = 21
 }
 
 local function GetKillerScore(word)
-    local lastChar = word:sub(-1)
-    return HardLetterScores[lastChar] or 0
+    for i = 4, 1, -1 do
+        if #word >= i then
+            local suffix = word:sub(-i)
+            if HardLetterScores[suffix] then
+                return HardLetterScores[suffix]
+            end
+        end
+    end
+    
+    return 0
 end
+
 
 local function getDistance(s1, s2)
     if #s1 == 0 then
