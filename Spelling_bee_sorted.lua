@@ -1054,7 +1054,14 @@ local HARDCODED_WORDS = {
 "scutoid",
 "concomitance",
 "zanthoxylaceae",
-"sulfoquinovosyldiacylglycerol"
+"sulfoquinovosyldiacylglycerol",
+"pot",
+"petal",
+"alright",
+"grotesque",
+"tourniquet",
+"myrmecophilous",
+"subacutesclerosingpanencephalitis"
 }
 
 -- Setup GUI
