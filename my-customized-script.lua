@@ -2558,9 +2558,6 @@ UpdateList = function(detectedText, requiredLetter)
     if bucket then
         local checkWord = function(w)
             if Blacklist[w] or UsedWords[w] or uselessEnglishWords[w] then return end
-                
-                local function checkWord(w)
-                 if IsWordBlacklisted(w) then return end
                     
             if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
             
