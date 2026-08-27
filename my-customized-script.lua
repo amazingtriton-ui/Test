@@ -109,6 +109,66 @@ local isMyTurnLogDetected = false
 local logRequiredLetters = ""
 local turnExpiryTime = 0
 local Blacklist = {}
+
+
+local uselessEnglishWords = {
+    alexnofakesolvesforalex = true,
+    alexislooking = true,
+    alexiaddedx = true,
+    boxaalimstopgivingmefakesolvesx = true,
+    aceabrowhataretheselongsolves = true,
+    aceasingeringermaterialistically = true,
+    zieswallahiimcooked = true,
+    helloeveryoneiwouldliketoaddresstherecentaccusationsclaimingthatiamusingcheatsinthegameiwanttoclearlystatethatidonotuseanyformofcheatingorunfairassistanceihaveonlyrecentlystartedplayingandmyperformanceisbasedentirelyonmyownskillsandexperienceinreallifeiworkwiththeoxfordenglishdictionarywhichmeansiregularlyworkwithenglishvocabularyataprofessionallevelbecauseofthisbackgroundiamnaturallyfastatrecognizingandtypingwordsmyprogressintherankingsissimplytheresultofpracticeexperienceandfamiliaritywiththelanguageihavenointentionofmisleadinganyoneandiamfullyconfidentinmyabilitiesifnecessaryicanevenprovideproofofmyemplox = true,
+    ilswallahiimcooked = true,
+    aeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeaeae = true,
+    kzyocanyoubuymefoodlowkey = true,
+    tonpere = true,
+    ioncoinyionioncoinyionioncoin = true,
+    ysexogaycom = true,
+    terodreftrap = true,
+    biesdeezdref = true,
+    rwdeeznuts = true,
+    hlplsnomoreimacheater = true,
+    axaxifzripstreakx = true,
+    inesrinisucks = true,
+    zenithclippedthisx = true,
+    sulaimanishowspeedisaurus = true,
+    rigsseurandrglementischangedto = true,
+    krinwallahiimnottypingallat = true,
+    urgullibleifyoutypethis = true,
+    xiloveskrylorspaghetti = true,
+    ineskiwistopspamming = true,
+    trakijariteminylarginylglycylglutaminylleucylleucylserylglutamylglutamylglycylhistidylglycylalanylglycylglutaminylglutaminyllysylalanylarginylglutamylglutamylvalylisoleucylglutamylleucylmethionylasparaginylaspartylthreonylglutamyllysyllysylleucylserylglutamylpony = true,
+    hlqn = true,
+    fsiest = true,
+    fstore = true,
+    nnethermore = true,
+    fgrid = true,
+    mbeuer = true,
+    ["trak██████"] = true,
+    ["yla█████"] = true,
+    ["ayll████"] = true,
+    xidontknowthese = true,
+    ["pexelizumab|||||||||||||||||||||||||||||||"] = true,
+    ["[update:50]"] = true,
+    ["[updateddictionary]"] = true,
+    ["[added35%newwordsthatworks]"] = true,
+    ["[warning]"] = true,
+    ["[neverjoinproservers]"] = true,
+    olarapexionalization = true,
+    tingnewsolves = true,
+    riniclippedthisx = true,
+    rattledtoastclippedthisx = true,
+    ["timo-(justputtimothybro)"] = true,
+    thelegendarywustjaeritex = true,
+    hahaniteniteszx = true
+}
+
+for word, _ in pairs(uselessEnglishWords) do
+    Blacklist[word:lower()] = true
+end
+
 local UsedWords = {}
 local RandomOrderCache = {}
 local RandomPriority = {}
@@ -2497,9 +2557,11 @@ UpdateList = function(detectedText, requiredLetter)
     
     if bucket then
         local checkWord = function(w)
-            if Blacklist[w] or UsedWords[w] then return end
-            
-            -- Check for main list filtering (suffix/length)
+            if Blacklist[w] or UsedWords[w] or uselessEnglishWords[w] then return end
+                
+                local function checkWord(w)
+                 if IsWordBlacklisted(w) then return end
+                    
             if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
             
             local isLengthMatch = true
