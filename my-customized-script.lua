@@ -112,12 +112,10 @@ local Blacklist = {}
 
 
 local function IsWordValid(word)
-    -- Check if word is blacklisted
-    if Blacklist[word] then
-        return false
-    end
+    if not word or word == "" then return false end
+    if Blacklist[word] then return false end
     
-    
+    -- Check main dictionary
     local c = word:sub(1,1)
     if c ~= "" and Buckets and Buckets[c] then
         for _, w in ipairs(Buckets[c]) do
@@ -127,7 +125,7 @@ local function IsWordValid(word)
         end
     end
     
-    
+    -- Check custom words
     if Config.CustomWords then
         for _, w in ipairs(Config.CustomWords) do
             if w == word then
