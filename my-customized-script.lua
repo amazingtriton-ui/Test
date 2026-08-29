@@ -110,34 +110,6 @@ local logRequiredLetters = ""
 local turnExpiryTime = 0
 local Blacklist = {}
 
-
-local function IsWordValid(word)
-    if not word or word == "" then return false end
-    if Blacklist[word] then return false end
-    
-    -- Check main dictionary
-    local c = word:sub(1,1)
-    if c ~= "" and Buckets and Buckets[c] then
-        for _, w in ipairs(Buckets[c]) do
-            if w == word then
-                return true
-            end
-        end
-    end
-    
-    -- Check custom words
-    if Config.CustomWords then
-        for _, w in ipairs(Config.CustomWords) do
-            if w == word then
-                return true
-            end
-        end
-    end
-    
-    return false
-end
-
-
 local uselessEnglishWords = {
     alexnofakesolvesforalex = true,
     alexislooking = true,
@@ -2588,7 +2560,7 @@ UpdateList = function(detectedText, requiredLetter)
     else
         bucket = Words
     end
-          
+    
     local function CollectMatches(prefix, tryFallbackLengths)
     local exacts = {}
     local fallbackExacts = {}
@@ -2597,38 +2569,7 @@ UpdateList = function(detectedText, requiredLetter)
     
     if bucket then
         local checkWord = function(w)
-            
-            local isValid = false
-            
-            
-            local c = w:sub(1,1)
-            if c ~= "" and Buckets and Buckets[c] then
-                for _, mainWord in ipairs(Buckets[c]) do
-                    if mainWord == w then
-                        isValid = true
-                        break
-                    end
-                end
-            end
-            
-            -- Check custom whitelist if not in main dictionary
-            if not isValid and Config.CustomWords then
-                for _, customWord in ipairs(Config.CustomWords) do
-                    if customWord == w then
-                        isValid = true
-                        break
-                    end
-                end
-            end
-            
-            
-            if not isValid then return end
-            
-            
-            if Blacklist[w] then return end
-            
-            
-            if UsedWords[w] then return end
+            if Blacklist[w] or UsedWords[w] or uselessEnglishWords[w] then return end
                     
             if suffixMode ~= "" and w:sub(-#suffixMode) ~= suffixMode then return end
             
