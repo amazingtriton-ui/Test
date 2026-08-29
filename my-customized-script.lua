@@ -1699,20 +1699,6 @@ CWAddBtn.MouseButton1Click:Connect(function()
     ShowToast("Added/whitelisted: " .. text, "success")
 end)
 
-    table.insert(Config.CustomWords, text)
-    SaveConfig()
-    
-    table.insert(Words, text)
-    if c == "" then c = "#" end
-    Buckets[c] = Buckets[c] or {}
-    table.insert(Buckets[c], text)
-    
-    CWAddBox.Text = ""
-    CWAddBox:ReleaseFocus()
-    RefreshCustomWords()
-    ShowToast("Added custom word: " .. text, "success")
-end)
-
 -- ENTER KEY SUPPORT
 CWAddBox.FocusLost:Connect(function(enterPressed)
     if enterPressed then
