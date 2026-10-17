@@ -274,8 +274,7 @@ local function ReloadDictionary()
 
     task.spawn(function()
         local urls = {
-            "https://raw.githubusercontent.com/artzified/WordBombDictionary/refs/heads/main/words.txt
-",
+            "https://raw.githubusercontent.com/artzified/WordBombDictionary/refs/heads/main/words.txt",
         }
 
         local loadedCount = 0
@@ -316,7 +315,7 @@ local function ReloadDictionary()
             if lastQuery ~= "" then updateSuggestions(lastQuery) end
             if UpdateUsedMenuVisuals then UpdateUsedMenuVisuals() end
         else
-            WordText.Text = "Failed to load dictionaries."
+            WordText.Text = "Failed to fetch dictionary."
         end
     end)
 end
