@@ -59,14 +59,12 @@ UnpatchabombFrame.BorderSizePixel = 0
 UnpatchabombFrame.Position = UDim2.new(0, 100, 0, 100)
 UnpatchabombFrame.Size = UDim2.new(0, 305, 0, 350)
 
--- ===== GUI SCALE (UIScale) =====
 local MIN_SCALE, MAX_SCALE, SCALE_STEP = 1, 4, 0.25
 local guiScale = 1
 
 local FrameScale = Instance.new("UIScale")
 FrameScale.Parent = UnpatchabombFrame
 FrameScale.Scale = 1
--- ===============================
 
 TopFrame.Name = "TopFrame"
 TopFrame.Parent = UnpatchabombFrame
@@ -214,7 +212,6 @@ UsedBtn.Text = "USED"
 UsedBtn.TextColor3 = THEME.Accent
 UsedBtn.TextSize = 12.000
 
--- ===== RESIZE GRIP =====
 local ResizeGrip = Instance.new("TextButton")
 ResizeGrip.Name = "ResizeGrip"
 ResizeGrip.Parent = UnpatchabombFrame
@@ -237,7 +234,6 @@ gripScale.Scale = 1
 local gripCorner = Instance.new("UICorner")
 gripCorner.CornerRadius = UDim.new(0, 4)
 gripCorner.Parent = ResizeGrip
--- ========================
 
 local dragging, dragInput, dragStart, startPos
 TopFrame.InputBegan:Connect(function(input)
@@ -259,7 +255,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ===== RESIZE LOGIC =====
 local resizing = false
 local resizeStart = nil
 local resizeStartSize = nil
@@ -296,12 +291,11 @@ UserInputService.InputEnded:Connect(function(input)
         resizing = false
     end
 end)
--- ========================
 
 local WORDS = {}
 local IDA_alreadyUsed = {}
 local autoGetEnabled = false
-local currentTypeDelay = 0          -- was 0.035
+local currentTypeDelay = 0
 local lastQuery = ""
 
 local updateSuggestions
@@ -649,7 +643,6 @@ local SpecialKeys = {
     [" "] = Enum.KeyCode.Space
 }
 
--- ===== PATCHED: no per-char waits =====
 local function SimulateKey(char)
     local ok = pcall(function()
         VirtualInputManager:SendTextInput(char)
@@ -668,11 +661,9 @@ local function SimulateKey(char)
     end
 end
 
--- ===== PATCHED: whole-word fast path =====
 local function IDA_autoType(word)
     if not word or word == "" then return end
 
-    -- Fast path: send the whole word as one TextInput event
     local ok = pcall(function()
         VirtualInputManager:SendTextInput(word)
     end)
@@ -687,7 +678,6 @@ local function IDA_autoType(word)
         end
     end
 
-    -- Submit
     pcall(function()
         VirtualInputManager:SendKeyEvent(true,  Enum.KeyCode.Return, false, game)
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
@@ -799,7 +789,6 @@ updateSuggestions = function(query)
             table.insert(IDA_alreadyUsed, word)
             UpdateUsedMenuVisuals()
             
-            -- ===== PATCHED: no post-type wait, no destroy delay =====
             task.spawn(function()
                 IDA_autoType(word)
                 if btn.Parent then btn:Destroy() end
