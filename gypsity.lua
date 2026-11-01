@@ -784,9 +784,9 @@ updateSuggestions = function(query)
         for i = #weird, 2, -1 do local j = math.random(i); weird[i], weird[j] = weird[j], weird[i] end
         for i = #rest, 2, -1 do local j = math.random(i); rest[i], rest[j] = rest[j], rest[i] end
         matches = {}
-        for _, w in ipairs(weird) do table.insert(matches, w) end
+                for _, w in ipairs(weird) do table.insert(matches, w) end
         for _, w in ipairs(rest)  do table.insert(matches, w) end
-
+    end
     local ySize = 0
     local limit = math.min(100, #matches)
     
