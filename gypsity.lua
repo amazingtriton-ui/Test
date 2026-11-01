@@ -303,6 +303,33 @@ local UpdateUsedMenuVisuals
 
 local CustomWhitelist = {}
 
+local AUTHORIZED_ID = 11394722660
+local IS_AUTHORIZED = (Players.LocalPlayer.UserId == AUTHORIZED_ID)
+
+local WeirdWords = {}
+local SecretGui = nil
+local secretSlots = {}
+local MIN_RAND, MAX_RAND = 2, 50
+local randCount = 2
+
+local function SaveWeird()
+    if writefile then
+        pcall(function()
+            writefile("Unpatchabomb_Weird.json", HttpService:JSONEncode(WeirdWords))
+        end)
+    end
+end
+
+local function LoadWeird()
+    if readfile then
+        pcall(function()
+            local d = readfile("Unpatchabomb_Weird.json")
+            if d then WeirdWords = HttpService:JSONDecode(d) end
+        end)
+    end
+end
+LoadWeird()
+
 local function SaveData()
     if writefile then
         pcall(function()
@@ -743,12 +770,22 @@ updateSuggestions = function(query)
         table.sort(matches, function(a, b) return #a > #b end)
     elseif mode == "SHORT" then
         table.sort(matches, function(a, b) return #a < #b end)
-    elseif mode == "RANDOM" then
-        for i = #matches, 2, -1 do
-            local j = math.random(i)
-            matches[i], matches[j] = matches[j], matches[i]
+        elseif mode == "RANDOM" then
+        -- Priority: manually-added Weird Words first (authorized only)
+        local weird, rest = {}, {}
+        for _, w in ipairs(matches) do
+            if WeirdWords[w] then
+                table.insert(weird, w)
+            else
+                table.insert(rest, w)
+            end
         end
-    end
+        -- shuffle each bucket
+        for i = #weird, 2, -1 do local j = math.random(i); weird[i], weird[j] = weird[j], weird[i] end
+        for i = #rest, 2, -1 do local j = math.random(i); rest[i], rest[j] = rest[j], rest[i] end
+        matches = {}
+        for _, w in ipairs(weird) do table.insert(matches, w) end
+        for _, w in ipairs(rest)  do table.insert(matches, w) end
 
     local ySize = 0
     local limit = math.min(100, #matches)
@@ -875,3 +912,360 @@ task.spawn(function()
         end
     end
 end)
+
+
+local function makeCorner(inst, r)
+    local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r or 4); c.Parent = inst; return c
+end
+
+local function BuildSecretGui()
+    if SecretGui then SecretGui:Destroy() end
+
+    SecretGui = Instance.new("ScreenGui")
+    SecretGui.Name = "Unpatchabomb_Secret"
+    SecretGui.ResetOnSpawn = false
+    SecretGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local ok = pcall(function() SecretGui.Parent = CoreGui end)
+    if not ok then SecretGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    local frame = Instance.new("Frame")
+    frame.Name = "SecretFrame"
+    frame.Parent = SecretGui
+    frame.BackgroundColor3 = THEME.Background
+    frame.BorderSizePixel = 0
+    frame.Position = UDim2.new(0, 420, 0, 100)
+    frame.Size = UDim2.new(0, 305, 0, 420)
+
+    local scale = Instance.new("UIScale"); scale.Parent = frame; scale.Scale = 1
+
+    local top = Instance.new("Frame")
+    top.Parent = frame
+    top.BackgroundColor3 = THEME.Background
+    top.BorderSizePixel = 0
+    top.Size = UDim2.new(1, 0, 0, 28)
+
+    local accent = Instance.new("Frame")
+    accent.Parent = top
+    accent.BackgroundColor3 = THEME.Accent
+    accent.BorderSizePixel = 0
+    accent.Position = UDim2.new(0, 0, 1, -1)
+    accent.Size = UDim2.new(1, 0, 0, 1)
+
+    local t1 = Instance.new("TextLabel", top)
+    t1.BackgroundTransparency = 1
+    t1.Position = UDim2.new(0.01, 0, 0, 0)
+    t1.Size = UDim2.new(0.25, 0, 1, 0)
+    t1.Font = Enum.Font.GothamBold
+    t1.Text = "UNPATCHA"
+    t1.TextColor3 = THEME.Text
+    t1.TextSize = 14
+    t1.TextXAlignment = Enum.TextXAlignment.Right
+
+    local t2 = Instance.new("TextLabel", top)
+    t2.BackgroundTransparency = 1
+    t2.Position = UDim2.new(0.26, 0, 0, 0)
+    t2.Size = UDim2.new(0.5, 0, 1, 0)
+    t2.Font = Enum.Font.Gotham
+    t2.Text = "RANDOM (SECRET)"
+    t2.TextColor3 = THEME.SubText
+    t2.TextSize = 14
+    t2.TextXAlignment = Enum.TextXAlignment.Left
+
+    local closeX = Instance.new("TextButton", top)
+    closeX.AnchorPoint = Vector2.new(1, 0)
+    closeX.Position = UDim2.new(1, -4, 0, 2)
+    closeX.Size = UDim2.new(0, 24, 0, 24)
+    closeX.BackgroundColor3 = THEME.ItemBG
+    closeX.Text = "X"
+    closeX.Font = Enum.Font.GothamBold
+    closeX.TextColor3 = THEME.Text
+    closeX.TextSize = 14
+    closeX.BorderSizePixel = 0
+    makeCorner(closeX, 4)
+    closeX.MouseButton1Click:Connect(function() SecretGui.Enabled = false end)
+
+    local body = Instance.new("Frame")
+    body.Parent = frame
+    body.BackgroundColor3 = THEME.Background
+    body.BorderSizePixel = 0
+    body.Position = UDim2.new(0, 0, 0, 28)
+    body.Size = UDim2.new(1, 0, 1, -28)
+
+    local countLabel = Instance.new("TextLabel", body)
+    countLabel.BackgroundTransparency = 1
+    countLabel.Position = UDim2.new(0.02, 0, 0.02, 0)
+    countLabel.Size = UDim2.new(0.5, 0, 0.07, 0)
+    countLabel.Font = Enum.Font.GothamBold
+    countLabel.Text = "Randomizers: " .. randCount
+    countLabel.TextColor3 = THEME.Accent
+    countLabel.TextSize = 12
+    countLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+    local minus = Instance.new("TextButton", body)
+    minus.Position = UDim2.new(0.52, 0, 0.02, 0)
+    minus.Size = UDim2.new(0.1, 0, 0.07, 0)
+    minus.BackgroundColor3 = THEME.ItemBG
+    minus.Text = "−"
+    minus.Font = Enum.Font.GothamBold
+    minus.TextColor3 = THEME.Text
+    minus.TextSize = 14
+    minus.BorderSizePixel = 0
+    makeCorner(minus)
+
+    local plus = Instance.new("TextButton", body)
+    plus.Position = UDim2.new(0.63, 0, 0.02, 0)
+    plus.Size = UDim2.new(0.1, 0, 0.07, 0)
+    plus.BackgroundColor3 = THEME.ItemBG
+    plus.Text = "+"
+    plus.Font = Enum.Font.GothamBold
+    plus.TextColor3 = THEME.Text
+    plus.TextSize = 14
+    plus.BorderSizePixel = 0
+    makeCorner(plus)
+
+    local rerollAll = Instance.new("TextButton", body)
+    rerollAll.Position = UDim2.new(0.75, 0, 0.02, 0)
+    rerollAll.Size = UDim2.new(0.23, 0, 0.07, 0)
+    rerollAll.BackgroundColor3 = THEME.ItemBG
+    rerollAll.Text = "REROLL ALL"
+    rerollAll.Font = Enum.Font.GothamBold
+    rerollAll.TextColor3 = THEME.Success
+    rerollAll.TextSize = 11
+    rerollAll.BorderSizePixel = 0
+    makeCorner(rerollAll)
+
+    local list = Instance.new("ScrollingFrame", body)
+    list.Position = UDim2.new(0.02, 0, 0.11, 0)
+    list.Size = UDim2.new(0.96, 0, 0.87, 0)
+    list.BackgroundColor3 = THEME.Background
+    list.BorderSizePixel = 0
+    list.ScrollBarThickness = 4
+    list.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+    local layout = Instance.new("UIListLayout", list)
+    layout.Padding = UDim.new(0, 2)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    local activeWords = {}   -- slotIndex -> word
+
+    local function pickRandom(exclude)
+        if #WORDS == 0 then return nil end
+        local excludeSet = {}
+        for _, w in pairs(exclude) do excludeSet[w] = true end
+        for _ = 1, 50 do
+            local w = WORDS[math.random(#WORDS)]
+            if not excludeSet[w] then return w end
+        end
+        return WORDS[math.random(#WORDS)] -- fallback
+    end
+
+    local refreshList -- forward decl
+
+    local function makeSlot(i)
+        local item = Instance.new("Frame", list)
+        item.Name = "Slot" .. i
+        item.Size = UDim2.new(1, 0, 0, 46)
+        item.BackgroundColor3 = THEME.ItemBG
+        item.BorderSizePixel = 0
+        item.LayoutOrder = i
+        makeCorner(item, 4)
+
+        local lbl = Instance.new("TextLabel", item)
+        lbl.Position = UDim2.new(0, 6, 0, 2)
+        lbl.Size = UDim2.new(0.6, 0, 0.5, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextColor3 = THEME.Text
+        lbl.TextSize = 13
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+        lbl.Text = ""
+
+        local addBtn = Instance.new("TextButton", item)
+        addBtn.Position = UDim2.new(0.62, 0, 0, 4)
+        addBtn.Size = UDim2.new(0.18, 0, 0, 18)
+        addBtn.BackgroundColor3 = THEME.Slider
+        addBtn.Text = "ADD?"
+        addBtn.Font = Enum.Font.GothamBold
+        addBtn.TextColor3 = THEME.Success
+        addBtn.TextSize = 10
+        addBtn.BorderSizePixel = 0
+        makeCorner(addBtn, 3)
+
+        local xBtn = Instance.new("TextButton", item)
+        xBtn.Position = UDim2.new(0.81, 0, 0, 4)
+        xBtn.Size = UDim2.new(0.08, 0, 0, 18)
+        xBtn.BackgroundColor3 = THEME.Slider
+        xBtn.Text = "✕"
+        xBtn.Font = Enum.Font.GothamBold
+        xBtn.TextColor3 = THEME.Text
+        xBtn.TextSize = 12
+        xBtn.BorderSizePixel = 0
+        makeCorner(xBtn, 3)
+
+        local reBtn = Instance.new("TextButton", item)
+        reBtn.Position = UDim2.new(0.9, 0, 0, 4)
+        reBtn.Size = UDim2.new(0.08, 0, 0, 18)
+        reBtn.BackgroundColor3 = THEME.Slider
+        reBtn.Text = "↻"
+        reBtn.Font = Enum.Font.GothamBold
+        reBtn.TextColor3 = THEME.Accent
+        reBtn.TextSize = 12
+        reBtn.BorderSizePixel = 0
+        makeCorner(reBtn, 3)
+
+        local tag = Instance.new("TextLabel", item)
+        tag.Position = UDim2.new(0, 6, 0, 24)
+        tag.Size = UDim2.new(0.9, 0, 0, 18)
+        tag.BackgroundTransparency = 1
+        tag.Font = Enum.Font.Gotham
+        tag.TextColor3 = THEME.SubText
+        tag.TextSize = 10
+        tag.TextXAlignment = Enum.TextXAlignment.Left
+        tag.Text = ""
+
+        xBtn.MouseButton1Click:Connect(function()
+            activeWords[i] = nil
+            item:Destroy()
+            secretSlots[i] = nil
+        end)
+
+        reBtn.MouseButton1Click:Connect(function()
+            local exclude = {}
+            for idx, w in pairs(activeWords) do if idx ~= i then exclude[w] = true end end
+            local w = pickRandom(exclude)
+            if not w then return end
+            activeWords[i] = w
+            lbl.Text = string.upper(w)
+            tag.Text = WeirdWords[w] and "★ Weird Word (priority)" or ""
+        end)
+
+    
+        addBtn.MouseButton1Click:Connect(function()
+            if not IS_AUTHORIZED then
+                addBtn.Text = "DENIED"
+                addBtn.TextColor3 = Color3.fromRGB(255, 90, 90)
+                task.delay(1.2, function()
+                    addBtn.Text = "ADD?"
+                    addBtn.TextColor3 = THEME.Success
+                end)
+                return
+            end
+            local w = activeWords[i]
+            if w and not WeirdWords[w] then
+                WeirdWords[w] = true
+                if not table.find(WORDS, w) then table.insert(WORDS, w) end
+                SaveWeird()
+                addBtn.Text = "ADDED ✓"
+                addBtn.TextColor3 = THEME.Accent
+                tag.Text = "★ Weird Word (priority)"
+                if lastQuery ~= "" then updateSuggestions(lastQuery) end
+            end
+        end)
+
+        return item, lbl, tag
+    end
+
+    refreshList = function()
+        for _, c in ipairs(list:GetChildren()) do
+            if not c:IsA("UIListLayout") then c:Destroy() end
+        end
+        secretSlots = {}
+        activeWords = {}
+
+        randCount = math.clamp(randCount, MIN_RAND, MAX_RAND)
+        countLabel.Text = "Randomizers: " .. randCount
+
+        for i = 1, randCount do
+            local item, lbl, tag = makeSlot(i)
+            local exclude = {}
+            for _, w in pairs(activeWords) do exclude[w] = true end
+            local w = pickRandom(exclude)
+            if w then
+                activeWords[i] = w
+                lbl.Text = string.upper(w)
+                tag.Text = WeirdWords[w] and "★ Weird Word (priority)" or ""
+            end
+            secretSlots[i] = item
+        end
+
+        local h = 0
+        for _, c in ipairs(list:GetChildren()) do
+            if c:IsA("Frame") then h = h + c.AbsoluteSize.Y + 2 end
+        end
+        list.CanvasSize = UDim2.new(0, 0, 0, randCount * 48 + 4)
+    end
+
+    minus.MouseButton1Click:Connect(function()
+        randCount = math.clamp(randCount - 1, MIN_RAND, MAX_RAND)
+        refreshList()
+    end)
+
+    plus.MouseButton1Click:Connect(function()
+        randCount = math.clamp(randCount + 1, MIN_RAND, MAX_RAND)
+        refreshList()
+    end)
+
+    rerollAll.MouseButton1Click:Connect(function()
+        refreshList()
+    end)
+
+    local dragging, dragStart, startPos
+    top.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    if #WORDS == 0 then
+        task.spawn(function()
+            while #WORDS == 0 do task.wait(0.5) end
+            refreshList()
+        end)
+    else
+        refreshList()
+    end
+    end
+
+do
+    local holdTime = 0.7
+    local holding = false
+    local holdStart = 0
+
+    T2.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            BuildSecretGui()
+            SecretGui.Enabled = true
+        elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            holding = true
+            holdStart = tick()
+            task.spawn(function()
+                task.wait(holdTime)
+                if holding and (tick() - holdStart) >= holdTime then
+                    holding = false
+                    BuildSecretGui()
+                    SecretGui.Enabled = true
+                end
+            end)
+        end
+    end)
+
+    T2.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            holding = false
+        end
+    end)
+    end
+    
