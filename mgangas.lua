@@ -763,7 +763,7 @@ local Coolthing = {
 "Desmos Alalal",
 "Gamma Secret Alalal",
 "Universal Collapse Alalal"
-    },
+    }
     Fatality = {
         "Lost In Time Alalal","Watcher Alalal"
     },
