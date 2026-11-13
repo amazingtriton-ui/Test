@@ -65,6 +65,8 @@ local Config = {
     MaxTypeSpeed = 999999,
     KeyboardLayout = "QWERTY"
 }
+Config.Blacklist = Config.Blacklist or {}
+Config.PrefixOverrides = Config.PrefixOverrides or {}
 
 local function SaveConfig()
     if writefile then
@@ -81,6 +83,9 @@ local function LoadConfig()
     end
 end
 LoadConfig()
+for word in pairs(Config.Blacklist) do
+    Blacklist[word] = true
+end
 
 local currentCPM = Config.CPM
 local isBlatant = Config.Blatant
@@ -109,6 +114,9 @@ local isMyTurnLogDetected = false
 local logRequiredLetters = ""
 local turnExpiryTime = 0
 local Blacklist = {}
+for word in pairs(Config.Blacklist or {}) do
+    Blacklist[word] = true
+end
 
 local uselessEnglishWords = {
     alexnofakesolvesforalex = true,
@@ -2031,6 +2039,568 @@ do
     end)
 end
 
+
+Config.Blacklist = Config.Blacklist or {}
+Config.PrefixOverrides = Config.PrefixOverrides or {}
+
+for word in pairs(Config.Blacklist) do
+    Blacklist[word] = true
+end
+
+local PrefixOverrides = Config.PrefixOverrides
+local OverrideWords = {}
+
+local function bucketWordsForPrefix(prefix)
+    prefix = prefix:lower()
+    if #prefix == 0 then return {} end
+    local c = prefix:sub(1,1)
+    local out = {}
+    if Buckets and Buckets[c] then
+        for _, w in ipairs(Buckets[c]) do
+            if w:sub(1, #prefix) == prefix then
+                out[#out+1] = w
+            end
+        end
+    end
+    return out
+end
+
+local function applyOverride(prefix, record)
+    prefix = prefix:lower()
+    OverrideWords[prefix] = OverrideWords[prefix] or {}
+
+    for _, w in ipairs(record.removed or {}) do
+        Blacklist[w] = true
+        if Buckets then
+            local c = w:sub(1,1)
+            if Buckets[c] then
+                for i = #Buckets[c], 1, -1 do
+                    if Buckets[c][i] == w then table.remove(Buckets[c], i) end
+                end
+            end
+        end
+        for i = #Words, 1, -1 do
+            if Words[i] == w then table.remove(Words, i) end
+        end
+        UsedWords[w] = true
+    end
+
+    for _, w in ipairs(record.added or {}) do
+        w = w:lower()
+        if w:sub(1, #prefix) == prefix then
+            Blacklist[w] = nil
+            UsedWords[w] = nil
+            local exists = false
+            for _, existing in ipairs(Words) do
+                if existing == w then exists = true break end
+            end
+            if not exists then
+                table.insert(Words, w)
+                local c = w:sub(1,1)
+                Buckets[c] = Buckets[c] or {}
+                table.insert(Buckets[c], w)
+            end
+        end
+    end
+
+    table.sort(Words)
+    for _, list in pairs(Buckets) do
+        table.sort(list)
+    end
+end
+
+for prefix, record in pairs(PrefixOverrides) do
+    applyOverride(prefix, record)
+end
+
+local function persistBlacklist()
+    Config.Blacklist = {}
+    for w in pairs(Blacklist) do
+        Config.Blacklist[w] = true
+    end
+    SaveConfig()
+end
+
+local function blacklistWord(word)
+    word = word:lower():gsub("[%s%c]+", "")
+    if word == "" then return false end
+    Blacklist[word] = true
+    UsedWords[word] = true
+
+    for i = #Words, 1, -1 do
+        if Words[i] == word then table.remove(Words, i) end
+    end
+    local c = word:sub(1,1)
+    if Buckets[c] then
+        for i = #Buckets[c], 1, -1 do
+            if Buckets[c][i] == word then table.remove(Buckets[c], i) end
+        end
+    end
+
+    for k, list in pairs(RandomOrderCache) do
+        for i = #list, 1, -1 do
+            if list[i] == word then table.remove(list, i) end
+        end
+    end
+
+    persistBlacklist()
+    return true
+end
+
+local function unblacklistWord(word)
+    word = word:lower():gsub("[%s%c]+", "")
+    if not Blacklist[word] then return false end
+    Blacklist[word] = nil
+    UsedWords[word] = nil
+
+    local exists = false
+    for _, w in ipairs(Words) do if w == word then exists = true break end end
+    if not exists then
+        table.insert(Words, word)
+        local c = word:sub(1,1)
+        Buckets[c] = Buckets[c] or {}
+        table.insert(Buckets[c], word)
+        table.sort(Buckets[c])
+    end
+    table.sort(Words)
+
+    persistBlacklist()
+    return true
+end
+
+local BlacklistManagerBtn = Instance.new("TextButton", TogglesFrame)
+BlacklistManagerBtn.Text = "Blacklist Manager"
+BlacklistManagerBtn.Font = Enum.Font.GothamMedium
+BlacklistManagerBtn.TextSize = 11
+BlacklistManagerBtn.TextColor3 = Color3.fromRGB(255, 140, 140)
+BlacklistManagerBtn.BackgroundColor3 = THEME.Background
+BlacklistManagerBtn.Size = UDim2.new(0, 265, 0, 24)
+BlacklistManagerBtn.Position = UDim2.new(0, 15, 0, 235)
+Instance.new("UICorner", BlacklistManagerBtn).CornerRadius = UDim.new(0, 4)
+
+local PrefixOverrideBtn = Instance.new("TextButton", TogglesFrame)
+PrefixOverrideBtn.Text = "Prefix Override Manager"
+PrefixOverrideBtn.Font = Enum.Font.GothamMedium
+PrefixOverrideBtn.TextSize = 11
+PrefixOverrideBtn.TextColor3 = Color3.fromRGB(140, 255, 200)
+PrefixOverrideBtn.BackgroundColor3 = THEME.Background
+PrefixOverrideBtn.Size = UDim2.new(0, 265, 0, 24)
+PrefixOverrideBtn.Position = UDim2.new(0, 15, 0, 265)
+Instance.new("UICorner", PrefixOverrideBtn).CornerRadius = UDim.new(0, 4)
+
+local function makeDraggableWindow(name, size, titleText, accentColor)
+    local f = Instance.new("Frame", ScreenGui)
+    f.Name = name
+    f.Size = size
+    f.Position = UDim2.new(0.5, -size.X.Offset/2, 0.5, -size.Y.Offset/2)
+    f.BackgroundColor3 = THEME.Background
+    f.Visible = false
+    f.ClipsDescendants = true
+    f.Active = true
+    EnableDragging(f)
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 8)
+    local s = Instance.new("UIStroke", f)
+    s.Color = accentColor or THEME.Accent
+    s.Transparency = 0.5
+    s.Thickness = 2
+
+    local hdr = Instance.new("TextLabel", f)
+    hdr.Text = titleText
+    hdr.Font = Enum.Font.GothamBold
+    hdr.TextSize = 15
+    hdr.TextColor3 = THEME.Text
+    hdr.Size = UDim2.new(1, 0, 0, 38)
+    hdr.BackgroundTransparency = 1
+
+    local close = Instance.new("TextButton", f)
+    close.Text = "X"
+    close.Font = Enum.Font.GothamBold
+    close.TextSize = 15
+    close.TextColor3 = Color3.fromRGB(255, 100, 100)
+    close.Size = UDim2.new(0, 36, 0, 36)
+    close.Position = UDim2.new(1, -36, 0, 2)
+    close.BackgroundTransparency = 1
+    close.MouseButton1Click:Connect(function() f.Visible = false end)
+
+    return f
+end
+
+local BlacklistFrame = makeDraggableWindow(
+    "BlacklistManager",
+    UDim2.new(0, 320, 0, 420),
+    "Blacklist Manager",
+    Color3.fromRGB(255, 140, 140)
+)
+
+local BLSearch = Instance.new("TextBox", BlacklistFrame)
+BLSearch.Font = Enum.Font.Gotham
+BLSearch.TextSize = 12
+BLSearch.BackgroundColor3 = THEME.ItemBG
+BLSearch.Size = UDim2.new(1, -20, 0, 26)
+BLSearch.Position = UDim2.new(0, 10, 0, 42)
+Instance.new("UICorner", BLSearch).CornerRadius = UDim.new(0, 4)
+BLSearch.PlaceholderText = "Search blacklist..."
+BLSearch.PlaceholderColor3 = THEME.SubText
+BLSearch.TextXAlignment = Enum.TextXAlignment.Left
+
+local BLScroll = Instance.new("ScrollingFrame", BlacklistFrame)
+BLScroll.Size = UDim2.new(1, -20, 1, -125)
+BLScroll.Position = UDim2.new(0, 10, 0, 72)
+BLScroll.BackgroundTransparency = 1
+BLScroll.ScrollBarThickness = 3
+BLScroll.ScrollBarImageColor3 = Color3.fromRGB(255, 140, 140)
+BLScroll.CanvasSize = UDim2.new(0,0,0,0)
+
+local BLLayout = Instance.new("UIListLayout", BLScroll)
+BLLayout.Padding = UDim.new(0, 2)
+BLLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local BLCountLbl = Instance.new("TextLabel", BlacklistFrame)
+BLCountLbl.Size = UDim2.new(1, -20, 0, 16)
+BLCountLbl.Position = UDim2.new(0, 10, 1, -50)
+BLCountLbl.BackgroundTransparency = 1
+BLCountLbl.Font = Enum.Font.Gotham
+BLCountLbl.TextSize = 11
+BLCountLbl.TextColor3 = THEME.SubText
+BLCountLbl.TextXAlignment = Enum.TextXAlignment.Left
+
+local BLAddBox = Instance.new("TextBox", BlacklistFrame)
+BLAddBox.Font = Enum.Font.Gotham
+BLAddBox.TextSize = 12
+BLAddBox.BackgroundColor3 = THEME.ItemBG
+BLAddBox.Size = UDim2.new(1, -90, 0, 26)
+BLAddBox.Position = UDim2.new(0, 10, 1, -30)
+Instance.new("UICorner", BLAddBox).CornerRadius = UDim.new(0, 4)
+BLAddBox.PlaceholderText = "Add word to blacklist..."
+BLAddBox.PlaceholderColor3 = THEME.SubText
+BLAddBox.TextXAlignment = Enum.TextXAlignment.Left
+
+local BLAddBtn = Instance.new("TextButton", BlacklistFrame)
+BLAddBtn.Text = "Add"
+BLAddBtn.Font = Enum.Font.GothamBold
+BLAddBtn.TextSize = 11
+BLAddBtn.TextColor3 = Color3.fromRGB(255, 140, 140)
+BLAddBtn.BackgroundColor3 = THEME.ItemBG
+BLAddBtn.Size = UDim2.new(0, 70, 0, 26)
+BLAddBtn.Position = UDim2.new(1, -80, 1, -30)
+Instance.new("UICorner", BLAddBtn).CornerRadius = UDim.new(0, 4)
+
+local function RefreshBlacklist()
+    for _, c in ipairs(BLScroll:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+
+    local query = BLSearch.Text:lower():gsub("[%s%c]+", "")
+    local list = {}
+    for w in pairs(Blacklist) do
+        if query == "" or w:find(query, 1, true) then
+            list[#list+1] = w
+        end
+    end
+    table.sort(list)
+
+    for i, w in ipairs(list) do
+        local row = Instance.new("Frame", BLScroll)
+        row.Size = UDim2.new(1, -6, 0, 24)
+        row.BackgroundColor3 = (i % 2 == 0) and Color3.fromRGB(25,25,30) or Color3.fromRGB(30,30,35)
+        row.BorderSizePixel = 0
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+
+        local lbl = Instance.new("TextLabel", row)
+        lbl.Text = w
+        lbl.Font = Enum.Font.Gotham
+        lbl.TextSize = 12
+        lbl.TextColor3 = Color3.fromRGB(255, 160, 160)
+        lbl.Size = UDim2.new(1, -30, 1, 0)
+        lbl.Position = UDim2.new(0, 6, 0, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local rm = Instance.new("TextButton", row)
+        rm.Text = "X"
+        rm.Font = Enum.Font.GothamBold
+        rm.TextSize = 11
+        rm.TextColor3 = THEME.Success
+        rm.Size = UDim2.new(0, 24, 1, 0)
+        rm.Position = UDim2.new(1, -24, 0, 0)
+        rm.BackgroundTransparency = 1
+        rm.MouseButton1Click:Connect(function()
+            unblacklistWord(w)
+            ShowToast("Unblacklisted: " .. w, "success")
+            RefreshBlacklist()
+        end)
+    end
+
+    BLScroll.CanvasSize = UDim2.new(0, 0, 0, #list * 26)
+    BLCountLbl.Text = "Total blacklisted: " .. #list
+end
+
+BLAddBtn.MouseButton1Click:Connect(function()
+    local w = BLAddBox.Text
+    if w == "" or w == "Add word to blacklist..." then return end
+    local added, skipped = 0, 0
+    for word in w:gmatch("[^,]+") do
+        local clean = word:gsub("[%s%c]+", ""):lower()
+        if clean ~= "" then
+            if blacklistWord(clean) then added = added + 1 else skipped = skipped + 1 end
+        end
+    end
+    BLAddBox.Text = ""
+    BLAddBox:ReleaseFocus()
+    RefreshBlacklist()
+    ShowToast(("Blacklisted %d word(s)%s"):format(added, skipped > 0 and (", skipped " .. skipped) or ""), "warning")
+end)
+
+BLAddBox.FocusLost:Connect(function(enter)
+    if enter then BLAddBtn.MouseButton1Click:Fire() end
+end)
+
+BLSearch:GetPropertyChangedSignal("Text"):Connect(RefreshBlacklist)
+
+BlacklistManagerBtn.MouseButton1Click:Connect(function()
+    BlacklistFrame.Visible = not BlacklistFrame.Visible
+    BlacklistFrame.Parent = nil
+    BlacklistFrame.Parent = ScreenGui
+    if BlacklistFrame.Visible then
+        RefreshBlacklist()
+        if UpdateList then UpdateList(lastDetected, lastRequiredLetter) end
+    end
+end)
+
+local PrefixFrame = makeDraggableWindow(
+    "PrefixOverrideManager",
+    UDim2.new(0, 360, 0, 500),
+    "Prefix Override Manager",
+    Color3.fromRGB(140, 255, 200)
+)
+
+local PFPrefixBox = Instance.new("TextBox", PrefixFrame)
+PFPrefixBox.Font = Enum.Font.Gotham
+PFPrefixBox.TextSize = 12
+PFPrefixBox.BackgroundColor3 = THEME.ItemBG
+PFPrefixBox.Size = UDim2.new(1, -20, 0, 26)
+PFPrefixBox.Position = UDim2.new(0, 10, 0, 42)
+Instance.new("UICorner", PFPrefixBox).CornerRadius = UDim.new(0, 4)
+PFPrefixBox.PlaceholderText = "Prefix (e.g. vl)"
+PFPrefixBox.PlaceholderColor3 = THEME.SubText
+PFPrefixBox.TextXAlignment = Enum.TextXAlignment.Left
+
+local PFPasteBox = Instance.new("TextBox", PrefixFrame)
+PFPasteBox.Font = Enum.Font.Gotham
+PFPasteBox.TextSize = 11
+PFPasteBox.BackgroundColor3 = THEME.ItemBG
+PFPasteBox.Size = UDim2.new(1, -20, 0, 150)
+PFPasteBox.Position = UDim2.new(0, 10, 0, 76)
+PFPasteBox.TextWrapped = true
+PFPasteBox.TextXAlignment = Enum.TextXAlignment.Left
+PFPasteBox.TextYAlignment = Enum.TextYAlignment.Top
+PFPasteBox.ClearTextOnFocus = false
+PFPasteBox.MultiLine = true
+Instance.new("UICorner", PFPasteBox).CornerRadius = UDim.new(0, 4)
+PFPasteBox.PlaceholderText = "Paste updated wordlist here (one word per line)..."
+PFPasteBox.PlaceholderColor3 = THEME.SubText
+
+local PFApplyBtn = Instance.new("TextButton", PrefixFrame)
+PFApplyBtn.Text = "Apply Override"
+PFApplyBtn.Font = Enum.Font.GothamBold
+PFApplyBtn.TextSize = 12
+PFApplyBtn.TextColor3 = Color3.fromRGB(140, 255, 200)
+PFApplyBtn.BackgroundColor3 = THEME.ItemBG
+PFApplyBtn.Size = UDim2.new(0.5, -15, 0, 28)
+PFApplyBtn.Position = UDim2.new(0, 10, 0, 234)
+Instance.new("UICorner", PFApplyBtn).CornerRadius = UDim.new(0, 4)
+
+local PFResetBtn = Instance.new("TextButton", PrefixFrame)
+PFResetBtn.Text = "Reset Prefix"
+PFResetBtn.Font = Enum.Font.GothamBold
+PFResetBtn.TextSize = 12
+PFResetBtn.TextColor3 = Color3.fromRGB(255, 140, 140)
+PFResetBtn.BackgroundColor3 = THEME.ItemBG
+PFResetBtn.Size = UDim2.new(0.5, -15, 0, 28)
+PFResetBtn.Position = UDim2.new(0.5, 5, 0, 234)
+Instance.new("UICorner", PFResetBtn).CornerRadius = UDim.new(0, 4)
+
+local PFResult = Instance.new("TextLabel", PrefixFrame)
+PFResult.Size = UDim2.new(1, -20, 0, 24)
+PFResult.Position = UDim2.new(0, 10, 0, 268)
+PFResult.BackgroundTransparency = 1
+PFResult.Font = Enum.Font.Gotham
+PFResult.TextSize = 11
+PFResult.TextColor3 = THEME.SubText
+PFResult.TextXAlignment = Enum.TextXAlignment.Left
+PFResult.TextWrapped = true
+PFResult.Text = ""
+
+local PFOverrideScroll = Instance.new("ScrollingFrame", PrefixFrame)
+PFOverrideScroll.Size = UDim2.new(1, -20, 1, -315)
+PFOverrideScroll.Position = UDim2.new(0, 10, 0, 300)
+PFOverrideScroll.BackgroundTransparency = 1
+PFOverrideScroll.ScrollBarThickness = 3
+PFOverrideScroll.ScrollBarImageColor3 = Color3.fromRGB(140, 255, 200)
+PFOverrideScroll.CanvasSize = UDim2.new(0,0,0,0)
+
+local PFLayout = Instance.new("UIListLayout", PFOverrideScroll)
+PFLayout.Padding = UDim.new(0, 2)
+PFLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function RefreshOverrideList()
+    for _, c in ipairs(PFOverrideScroll:GetChildren()) do
+        if c:IsA("Frame") then c:Destroy() end
+    end
+    local count = 0
+    for prefix, rec in pairs(PrefixOverrides) do
+        count = count + 1
+        local row = Instance.new("Frame", PFOverrideScroll)
+        row.Size = UDim2.new(1, -6, 0, 28)
+        row.BackgroundColor3 = Color3.fromRGB(30,30,35)
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+
+        local lbl = Instance.new("TextLabel", row)
+        lbl.Text = string.format("%s  (+%d / -%d)", prefix, #(rec.added or {}), #(rec.removed or {}))
+        lbl.Font = Enum.Font.GothamMedium
+        lbl.TextSize = 11
+        lbl.TextColor3 = THEME.Text
+        lbl.Size = UDim2.new(1, -30, 1, 0)
+        lbl.Position = UDim2.new(0, 6, 0, 0)
+        lbl.BackgroundTransparency = 1
+        lbl.TextXAlignment = Enum.TextXAlignment.Left
+
+        local rm = Instance.new("TextButton", row)
+        rm.Text = "X"
+        rm.Font = Enum.Font.GothamBold
+        rm.TextSize = 11
+        rm.TextColor3 = Color3.fromRGB(255, 100, 100)
+        rm.Size = UDim2.new(0, 24, 1, 0)
+        rm.Position = UDim2.new(1, -24, 0, 0)
+        rm.BackgroundTransparency = 1
+        rm.MouseButton1Click:Connect(function()
+            PrefixOverrides[prefix] = nil
+            Config.PrefixOverrides = PrefixOverrides
+            SaveConfig()
+            ShowToast("Removed override for '" .. prefix .. "' (reload script to fully restore original words)", "warning")
+            RefreshOverrideList()
+        end)
+    end
+    PFOverrideScroll.CanvasSize = UDim2.new(0,0,0,count * 30)
+end
+
+PFApplyBtn.MouseButton1Click:Connect(function()
+    local prefix = PFPrefixBox.Text:lower():gsub("[%s%c]+", "")
+    if prefix == "" or prefix == "prefix (e.g. vl)" then
+        PFResult.Text = "Enter a prefix first."
+        PFResult.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
+    end
+
+    local newSet = {}
+    local newList = {}
+    for line in PFPasteBox.Text:gmatch("[^\r\n]+") do
+        local w = line:gsub("[%s%c]+", ""):lower()
+        if w ~= "" and not newSet[w] then
+            newSet[w] = true
+            newList[#newList+1] = w
+        end
+    end
+
+    if #newList == 0 then
+        PFResult.Text = "No words found in pasted list."
+        PFResult.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
+    end
+
+    local originalList = bucketWordsForPrefix(prefix)
+    if OverrideWords[prefix] then
+        originalList = {}
+        for _, w in ipairs(OverrideWords[prefix]) do originalList[#originalList+1] = w end
+        local rec = PrefixOverrides[prefix]
+        if rec then
+            originalList = {}
+            for _, w in ipairs(rec.retained or {}) do originalList[#originalList+1] = w end
+            for _, w in ipairs(rec.removed or {}) do originalList[#originalList+1] = w end
+        end
+    end
+
+    local origSet = {}
+    for _, w in ipairs(originalList) do origSet[w] = true end
+
+    local toRemove, toAdd, retained = {}, {}, {}
+    for w in pairs(origSet) do
+        if newSet[w] then
+            retained[#retained+1] = w
+        else
+            toRemove[#toRemove+1] = w
+        end
+    end
+    for w in pairs(newSet) do
+        if not origSet[w] then
+            toAdd[#toAdd+1] = w
+        end
+    end
+
+    local record = { added = toAdd, removed = toRemove, retained = retained }
+    PrefixOverrides[prefix] = record
+    Config.PrefixOverrides = PrefixOverrides
+    SaveConfig()
+
+    applyOverride(prefix, record)
+    OverrideWords[prefix] = {}
+    for _, w in ipairs(newList) do OverrideWords[prefix][#OverrideWords[prefix]+1] = w end
+
+    table.sort(toAdd); table.sort(toRemove); table.sort(retained)
+    PFResult.Text = string.format(
+        "Applied '%s': +%d added, -%d removed, %d retained.",
+        prefix, #toAdd, #toRemove, #retained
+    )
+    PFResult.TextColor3 = THEME.Success
+
+    ShowToast(
+        ("%s: +%d / -%d (retained %d)"):format(prefix, #toAdd, #toRemove, #retained),
+        "success"
+    )
+
+    if #toAdd > 0 then
+        print("[PrefixOverride] ADDED for '" .. prefix .. "': " .. table.concat(toAdd, ", "))
+    end
+    if #toRemove > 0 then
+        print("[PrefixOverride] REMOVED for '" .. prefix .. "': " .. table.concat(toRemove, ", "))
+    end
+
+    if UpdateList then
+        forceUpdateList = true
+        UpdateList(lastDetected, lastRequiredLetter)
+    end
+    RefreshOverrideList()
+end)
+
+PFResetBtn.MouseButton1Click:Connect(function()
+    local prefix = PFPrefixBox.Text:lower():gsub("[%s%c]+", "")
+    if prefix == "" then return end
+    if not PrefixOverrides[prefix] then
+        PFResult.Text = "No override exists for '" .. prefix .. "'."
+        PFResult.TextColor3 = THEME.Warning
+        return
+    end
+    PrefixOverrides[prefix] = nil
+    Config.PrefixOverrides = PrefixOverrides
+    SaveConfig()
+    PFResult.Text = "Override for '" .. prefix .. "' cleared. Note: re-run the script to restore original words."
+    PFResult.TextColor3 = THEME.Success
+    RefreshOverrideList()
+    if UpdateList then forceUpdateList = true UpdateList(lastDetected, lastRequiredLetter) end
+end)
+
+PrefixOverrideBtn.MouseButton1Click:Connect(function()
+    PrefixFrame.Visible = not PrefixFrame.Visible
+    PrefixFrame.Parent = nil
+    PrefixFrame.Parent = ScreenGui
+    if PrefixFrame.Visible then
+        RefreshOverrideList()
+    end
+end)
+
+RefreshBlacklist()
+RefreshOverrideList()
+
 local function CalculateDelay()
     local charsPerMin = currentCPM
     local baseDelay = 60 / charsPerMin
@@ -2764,6 +3334,15 @@ UpdateList = function(detectedText, requiredLetter)
                         local l = btn:FindFirstChild("Label")
                         if l then l.TextColor3 = THEME.Success end
                         Tween(btn, {BackgroundColor3 = Color3.fromRGB(30,60,40)})
+                    end
+                end)
+
+               btn.MouseButton2Click:Connect(function()
+                    local d = ButtonData[btn]
+                    if d and d.word then
+                        blacklistWord(d.word)
+                        ShowToast("Blacklisted: " .. d.word, "warning")
+                        if UpdateList then forceUpdateList = true UpdateList(lastDetected, lastRequiredLetter) end
                     end
                 end)
                 
