@@ -202,7 +202,7 @@ logConn = LogService.MessageOut:Connect(function(message, type)
     end
 end)
 
-local url = "https://raw.githubusercontent.com/amazingtriton-ui/aAaaaaAaAAAA-AAAAUBBVFFIBVRFVNRFINV/refs/heads/main/duplicate-lines-result.txt"
+local url = "https://raw.githubusercontent.com/amazingtriton-ui/Skyriad/refs/heads/main/wordlistREVAMPED.txt"
 local fileName = "ultimate_words_v4.txt"
 
 -- Temporary Loading UI
