@@ -716,7 +716,7 @@ SlidersFrame.Size = UDim2.new(1, 0, 0, 125)
 SlidersFrame.BackgroundTransparency = 1
 
 local TogglesFrame = Instance.new("Frame", SettingsFrame)
-TogglesFrame.Size = UDim2.new(1, 0, 0, 310)
+TogglesFrame.Size = UDim2.new(1, 0, 0, 350)
 TogglesFrame.Position = UDim2.new(0, 0, 0, 125)
 TogglesFrame.BackgroundTransparency = 1
 TogglesFrame.Visible = false
@@ -731,12 +731,13 @@ local function UpdateLayout()
         Tween(SettingsFrame, {Size = UDim2.new(1, 0, 0, 125), Position = UDim2.new(0, 0, 1, -125)})
         Tween(ScrollList, {Size = UDim2.new(1, -10, 1, -245)})
         TogglesFrame.Visible = false
-    else
-        Tween(SettingsFrame, {Size = UDim2.new(1, 0, 0, 435), Position = UDim2.new(0, 0, 1, -435)})
-        Tween(ScrollList, {Size = UDim2.new(1, -10, 1, -555)})
+        else
+        Tween(SettingsFrame, {Size = UDim2.new(1, 0, 0, 475), Position = UDim2.new(0, 0, 1, -475)})
+        Tween(ScrollList, {Size = UDim2.new(1, -10, 1, -595)})
         TogglesFrame.Visible = true
     end
-end
+ end  
+
 UpdateLayout()
 
 local ExpandBtn = Instance.new("TextButton", SlidersFrame)
