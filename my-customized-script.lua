@@ -83,9 +83,6 @@ local function LoadConfig()
     end
 end
 LoadConfig()
-for word in pairs(Config.Blacklist) do
-    Blacklist[word] = true
-end
 
 local currentCPM = Config.CPM
 local isBlatant = Config.Blatant
